@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "调试 MqttMonitor",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/MqttMonitor.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "${env:PATH}"
+                }
+            ],
+            "console": "internalConsole",
+            "visualizerFile": "c:\\Users\\13031_t92iryl\\AppData\\Roaming\\Code\\User\\workspaceStorage\\e9398710e1435ab14c97d112688bcef4\\tonka3000.qtvsctools\\qt.natvis.xml"
+        }
+    ]
+}
