@@ -71,7 +71,7 @@ MqttMonitor 是一个运行在 Windows 桌面端的 MQTT 客户端上位机，�
 
 | 层 | 技术 |
 |----|------|
-| UI 框架 | Qt 6（Widgets） |
+| UI 框架 | Qt 5（Widgets） |
 | MQTT 通信 | Eclipse Paho MQTT C++ |
 | 构建系统 | CMake + vcpkg |
 | 平台 | Windows 11 |
