@@ -1,12 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QSplitter>
 #include <QWidget>
 #include <QHBoxLayout>
-#include <QDateTime>
-#include <QFont>
-#include <QPlainTextEdit>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -14,27 +11,40 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this);
 
-    // --- Layout ---
-    auto* splitter = new QSplitter(Qt::Horizontal);
-    splitter->setHandleWidth(8);
+    // --- Nav bar ---
+    configBtn_ = new QPushButton("配置");
+    deviceBtn_ = new QPushButton("设备");
 
-    configPanel_ = new ConfigPanel(splitter);
-    configPanel_->setFixedWidth(300);
+    auto* navBar    = new QWidget(this);
+    auto* navLayout = new QVBoxLayout(navBar);
+    navLayout->setContentsMargins(0, 0, 0, 0);
+    navLayout->addWidget(configBtn_);
+    navLayout->addWidget(deviceBtn_);
+    navLayout->addStretch();
+    navBar->setFixedWidth(72);
 
-    messageList_ = new QPlainTextEdit(splitter);
-    messageList_->setFont(QFont("Consolas", 9));
-    messageList_->setReadOnly(true);
-    messageList_->setMaximumBlockCount(1000);  // ~500 messages x 2 lines
-    splitter->setStretchFactor(0, 0);
-    splitter->setStretchFactor(1, 1);
+    // --- Pages ---
+    configPanel_ = new ConfigPanel;
+    deviceView_  = new DeviceView;
 
+    stack_ = new QStackedWidget(this);
+    stack_->addWidget(configPanel_);   // index 0
+    stack_->addWidget(deviceView_);    // index 1
+
+    // --- Main layout ---
     auto* container = new QWidget(this);
-    auto* hLayout = new QHBoxLayout(container);
+    auto* hLayout   = new QHBoxLayout(container);
     hLayout->setContentsMargins(6, 6, 14, 6);
-    hLayout->addWidget(splitter);
+    hLayout->setSpacing(8);
+    hLayout->addWidget(navBar);
+    hLayout->addWidget(stack_);
     setCentralWidget(container);
 
-    // --- Signals ---
+    // --- Nav connections ---
+    connect(configBtn_, &QPushButton::clicked, [this]{ stack_->setCurrentIndex(0); });
+    connect(deviceBtn_, &QPushButton::clicked, [this]{ stack_->setCurrentIndex(1); });
+
+    // --- ConfigPanel connections ---
     connect(configPanel_, &ConfigPanel::connectRequested,
             this, &MainWindow::onConnectRequested);
     connect(configPanel_, &ConfigPanel::disconnectRequested,
@@ -55,7 +65,6 @@ void MainWindow::onConnectRequested(const QString& brokerUrl,
                                     const QString& password,
                                     const QString& topic)
 {
-    // Re-create client and bridge on each new connection
     mqttBridge_.reset();
     mqttClient_ = std::make_unique<MqttClient>(brokerUrl.toStdString(),
                                                clientId.toStdString());
@@ -72,7 +81,7 @@ void MainWindow::onConnectRequested(const QString& brokerUrl,
 
     mqttBridge_ = std::make_unique<MqttBridge>(*mqttClient_);
     connect(mqttBridge_.get(), &MqttBridge::messageReceived,
-            this, &MainWindow::onMessageReceived);
+            configPanel_, &ConfigPanel::appendMessage);
 
     configPanel_->onConnected();
     ui->statusbar->showMessage("Connected: " + brokerUrl);
@@ -87,10 +96,4 @@ void MainWindow::onDisconnectRequested()
     }
     configPanel_->onDisconnected();
     ui->statusbar->showMessage("Disconnected", 3000);
-}
-
-void MainWindow::onMessageReceived(const QString& topic, const QString& payload)
-{
-    const QString ts = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
-    messageList_->appendPlainText(QString("[%1]  %2\n%3").arg(ts).arg(topic).arg(payload.simplified()));
 }

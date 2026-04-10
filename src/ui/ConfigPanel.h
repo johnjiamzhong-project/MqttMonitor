@@ -25,6 +25,7 @@ signals:
 public slots:
     void onConnected();
     void onDisconnected();
+    void appendMessage(const QString& topic, const QString& payload);
 
 private slots:
     void onConnectClicked();

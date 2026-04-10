@@ -1,12 +1,14 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QPlainTextEdit>
+#include <QStackedWidget>
+#include <QPushButton>
 #include <memory>
 
 #include "src/core/MqttClient.h"
 #include "src/bridge/MqttBridge.h"
 #include "src/ui/ConfigPanel.h"
+#include "src/ui/DeviceView.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,15 +29,18 @@ private slots:
                             const QString& password,
                             const QString& topic);
     void onDisconnectRequested();
-    void onMessageReceived(const QString& topic, const QString& payload);
 
 private:
     Ui::MainWindow* ui;
 
     // Owned objects — order matters: bridge must be destroyed before client
-    std::unique_ptr<MqttBridge>  mqttBridge_;
-    std::unique_ptr<MqttClient>  mqttClient_;
+    std::unique_ptr<MqttBridge> mqttBridge_;
+    std::unique_ptr<MqttClient> mqttClient_;
 
-    ConfigPanel*  configPanel_;   // owned by Qt parent chain
-    QPlainTextEdit* messageList_;   // owned by Qt parent chain
+    QStackedWidget* stack_;
+    ConfigPanel*    configPanel_;   // owned by Qt parent chain
+    DeviceView*     deviceView_;    // owned by Qt parent chain
+
+    QPushButton* configBtn_;
+    QPushButton* deviceBtn_;
 };
