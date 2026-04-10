@@ -40,8 +40,9 @@ target_link_libraries(MqttMonitor PRIVATE
 # which leaves mqtt::message::EMPTY_STR and similar static members unresolved.
 if(MSVC)
     target_compile_definitions(MqttMonitor PRIVATE PAHO_MQTTPP_IMPORTS)
-    # Suppress C4819: third-party Paho headers contain non-ASCII chars not representable in GBK (CP936)
-    target_compile_options(MqttMonitor PRIVATE /wd4819)
+    # Treat all source files as UTF-8 (avoids GBK misparse on Chinese Windows)
+    # Also suppresses C4819: non-ASCII chars in third-party Paho headers
+    target_compile_options(MqttMonitor PRIVATE /utf-8 /wd4819)
 endif()
 
 include(GNUInstallDirs)

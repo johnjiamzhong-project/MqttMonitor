@@ -42,6 +42,10 @@ CMakePresets.json                 ✅ 完成（替代 build/*.bat 脚本）
 - [x] MainWindow 接入（QSplitter 布局，整合 ConfigPanel + MqttBridge，打通连接流程）
 - [x] 修复关键 Bug：MqttClient 继承 mqtt::callback 并注册 set_callback(*this)，消息回调正常触发
 - [x] 抑制 Paho 头文件引起的 MSVC C4819 编码警告
+- [x] 消息展示面板：右侧 QPlainTextEdit（只读，最多 500 条，自动滚动）
+- [x] 消息格式：`[hh:mm:ss.zzz]  topic` + 换行 + `    payload`，payload 自动压缩为单行
+- [x] 布局调整：container + QHBoxLayout 包裹 splitter，右侧留边距，splitter handle 加宽
+- [x] 添加 `/utf-8` MSVC 编译选项，解决中文 Windows 下 UTF-8 源文件解析乱码问题
 
 ### 创建/修改的文件
 ```
@@ -54,12 +58,13 @@ src/
 └── ui/
     ├── ConfigPanel.h / .cpp   ✅ 完成
     └── ConfigPanel.ui         ✅ 完成
-mainwindow.h / .cpp            ✅ 重写，接入 MqttBridge + ConfigPanel
+mainwindow.h / .cpp            ✅ 消息展示接入，QPlainTextEdit 替换占位 QWidget
+CMakeLists.txt                 ✅ 添加 /utf-8 /wd4819 编译选项
 ```
 
 ### 待做
-- [ ] DeviceGridView（设备卡片网格，替换右侧占位 QWidget）
-- [ ] 消息展示与 JSON 解析
+- [ ] DeviceGridView（设备卡片网格，替换右侧消息列表）
+- [ ] JSON 解析与结构化展示
 
 ---
 

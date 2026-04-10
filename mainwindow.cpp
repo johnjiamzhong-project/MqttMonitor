@@ -4,7 +4,9 @@
 #include <QSplitter>
 #include <QWidget>
 #include <QHBoxLayout>
-#include <QDebug>
+#include <QDateTime>
+#include <QFont>
+#include <QPlainTextEdit>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -13,17 +15,24 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this);
 
     // --- Layout ---
-    auto* splitter = new QSplitter(Qt::Horizontal, this);
+    auto* splitter = new QSplitter(Qt::Horizontal);
+    splitter->setHandleWidth(8);
 
     configPanel_ = new ConfigPanel(splitter);
     configPanel_->setFixedWidth(300);
 
-    // Placeholder for DeviceGridView (Phase 2 next step)
-    auto* rightPanel = new QWidget(splitter);
+    messageList_ = new QPlainTextEdit(splitter);
+    messageList_->setFont(QFont("Consolas", 9));
+    messageList_->setReadOnly(true);
+    messageList_->setMaximumBlockCount(1000);  // ~500 messages x 2 lines
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
 
-    setCentralWidget(splitter);
+    auto* container = new QWidget(this);
+    auto* hLayout = new QHBoxLayout(container);
+    hLayout->setContentsMargins(6, 6, 14, 6);
+    hLayout->addWidget(splitter);
+    setCentralWidget(container);
 
     // --- Signals ---
     connect(configPanel_, &ConfigPanel::connectRequested,
@@ -82,6 +91,6 @@ void MainWindow::onDisconnectRequested()
 
 void MainWindow::onMessageReceived(const QString& topic, const QString& payload)
 {
-    // Placeholder until DeviceGridView is ready
-    qDebug() << "[MQTT]" << topic << "->" << payload;
+    const QString ts = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+    messageList_->appendPlainText(QString("[%1]  %2\n%3").arg(ts).arg(topic).arg(payload.simplified()));
 }
