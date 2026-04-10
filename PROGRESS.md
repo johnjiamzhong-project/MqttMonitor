@@ -32,27 +32,33 @@ CMakePresets.json                 ✅ 完成（替代 build/*.bat 脚本）
 
 ---
 
-## Phase 2 — 基础 UI 🔄 进行中
+## Phase 2 — 基础 UI ✅ 完成
 
 最后更新：2026-04-10
 
 ### 已完成
 - [x] MqttBridge（Paho 回调 → Qt 信号跨线程转发）
-- [x] ConfigPanel（连接配置面板，含输入校验）
+- [x] ConfigPanel（连接配置面板，含输入校验，基于 .ui 文件）
+- [x] MainWindow 接入（QSplitter 布局，整合 ConfigPanel + MqttBridge，打通连接流程）
+- [x] 修复关键 Bug：MqttClient 继承 mqtt::callback 并注册 set_callback(*this)，消息回调正常触发
+- [x] 抑制 Paho 头文件引起的 MSVC C4819 编码警告
 
-### 创建的文件
+### 创建/修改的文件
 ```
 src/
+├── core/
+│   ├── MqttClient.h / .cpp    ✅ 修复回调注册 bug
+│   └── MessageBuffer.h / .cpp ✅ 完成
 ├── bridge/
-│   ├── MqttBridge.h / .cpp    ✅ 完成
+│   └── MqttBridge.h / .cpp    ✅ 完成
 └── ui/
     ├── ConfigPanel.h / .cpp   ✅ 完成
     └── ConfigPanel.ui         ✅ 完成
+mainwindow.h / .cpp            ✅ 重写，接入 MqttBridge + ConfigPanel
 ```
 
 ### 待做
-- [ ] MainWindow 接入（组装 ConfigPanel + MqttBridge，打通连接流程）
-- [ ] DeviceGridView（设备卡片网格）
+- [ ] DeviceGridView（设备卡片网格，替换右侧占位 QWidget）
 - [ ] 消息展示与 JSON 解析
 
 ---
