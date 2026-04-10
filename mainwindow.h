@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QPlainTextEdit>
 #include <memory>
 
 #include "src/core/MqttClient.h"
@@ -35,5 +36,6 @@ private:
     std::unique_ptr<MqttBridge>  mqttBridge_;
     std::unique_ptr<MqttClient>  mqttClient_;
 
-    ConfigPanel* configPanel_;  // owned by Qt parent chain
+    ConfigPanel*  configPanel_;   // owned by Qt parent chain
+    QPlainTextEdit* messageList_;   // owned by Qt parent chain
 };
