@@ -98,20 +98,25 @@ Paho 的消息回调运行在子线程，Bridge 层通过 `Qt::QueuedConnection`
 
 ## 开发阶段规划
 
-### Phase 1 — 核心连通
-- [ ] CMakeLists.txt 集成 Paho MQTT C++
-- [ ] MqttClient 封装：连接、订阅、发布
-- [ ] 控制台验证消息收发
+### Phase 1 — 核心连通 ✅ 完成
+- [x] CMakeLists.txt 集成 Paho MQTT C++
+- [x] MqttClient 封装：连接、订阅、发布
+- [x] MessageBuffer 线程安全消息队列
+- [x] CMakePresets.json（VS Code CMake Tools 集成）
 
-### Phase 2 — 基础 UI
-- [ ] 配置页：Broker 参数填写与保存
-- [ ] 设备页：卡片网格布局
-- [ ] Bridge 层：Paho 回调 → Qt 信号跨线程安全传递
-- [ ] 消息展示：原始 Payload + JSON 解析
+### Phase 2 — 基础 UI ✅ 完成
+- [x] ConfigPanel：Broker 参数填写，内置 QSplitter（左配置表单 + 右消息列表）
+- [x] MqttBridge：Paho 回调 → Qt 信号跨线程安全传递
+- [x] MainWindow：navBar（配置/设备）+ QStackedWidget 双页结构
+- [x] DeviceView 占位类（待 Phase 3 实现）
 
-### Phase 3 — 设备管理
+### Phase 3 — 设备管理 ⏳ 进行中
+- [x] 设备消息 JSON 结构确定（device_id / name / status / timestamp / data）
+- [ ] DeviceView 实现（QScrollArea + QGridLayout 卡片网格）
+- [ ] DeviceCard 类（展示 name / status / data KV）
+- [ ] JSON 解析（Qt5 QJsonDocument）
 - [ ] 手动添加/删除设备
-- [ ] 自动发现：监听通配符 Topic，自动生成卡片
+- [ ] 自动发现：监听通配符 Topic（如 `devices/#`），自动生成卡片
 - [ ] 多选设备 + 指令群发
 
 ### Phase 4 — 扩展模块（后续迭代）
@@ -121,38 +126,63 @@ Paho 的消息回调运行在子线程，Bridge 层通过 `Qt::QueuedConnection`
 
 ---
 
-## 目录结构（规划）
+## 目录结构
 
 ```
 MqttMonitor/
 ├── CMakeLists.txt
+├── CMakePresets.json
 ├── README.md
-├── src/
-│   ├── core/
-│   │   ├── MqttClient.h / .cpp        # Paho 封装
-│   │   └── MessageBuffer.h / .cpp     # 线程安全消息队列
-│   ├── bridge/
-│   │   └── MqttBridge.h / .cpp        # Paho 回调 → Qt 信号
-│   └── ui/
-│       ├── MainWindow.h / .cpp
-│       ├── ConfigPanel.h / .cpp
-│       ├── DeviceGridView.h / .cpp
-│       ├── DeviceCard.h / .cpp
-│       └── DeviceDetailView.h / .cpp
-└── resources/
-    └── icons/
+├── PROGRESS.md
+├── main.cpp
+├── mainwindow.h / .cpp / .ui
+└── src/
+    ├── core/
+    │   ├── MqttClient.h / .cpp        # Paho 封装
+    │   └── MessageBuffer.h / .cpp     # 线程安全消息队列
+    ├── bridge/
+    │   └── MqttBridge.h / .cpp        # Paho 回调 → Qt 信号
+    └── ui/
+        ├── ConfigPanel.h / .cpp / .ui  # 配置页（含消息列表）
+        ├── DeviceView.h / .cpp         # 设备页（Phase 3 实现中）
+        ├── DeviceCard.h / .cpp         # 设备卡片（待实现）
+        └── DeviceDetailView.h / .cpp   # 设备详情（待实现）
 ```
 
 ---
 
-## 关于 Topic 格式
+## 消息格式约定
 
-MqttMonitor **不强制约定 Topic 结构**。
-
-用户可以自由配置订阅规则，程序展示原始消息。若需要自动发现设备，建议（非强制）采用如下格式，便于从 Topic 中解析出设备标识：
+### Topic 格式
 
 ```
-{任意前缀}/{device_id}/{任意后缀}
+devices/<device_id>/status
 ```
 
-例如：`factory/line1/temp`、`devices/sensor_01/data` 均可正常工作。
+`device_id` 同时冗余在 payload JSON 中，便于解析。
+
+### Payload JSON 结构
+
+```json
+{
+  "device_id":  "device001",
+  "name":       "温控器-1号",
+  "status":     "online",
+  "timestamp":  1712750000,
+  "data": {
+    "temperature": 25.3,
+    "humidity":    60
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `device_id` | string | 设备唯一标识 |
+| `name` | string | 可读名称，卡片标题显示 |
+| `status` | string | `online` / `offline` / `error` |
+| `timestamp` | number | Unix 时间戳（秒） |
+| `data` | object | 业务 KV，value 为 number 或 string |
+
+- 设备离线时主动发送 `status: offline` 消息，不依赖心跳超时
+- `data` 字段结构自由，程序以 KV 列表形式展示在卡片下方

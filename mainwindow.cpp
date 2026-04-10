@@ -82,6 +82,8 @@ void MainWindow::onConnectRequested(const QString& brokerUrl,
     mqttBridge_ = std::make_unique<MqttBridge>(*mqttClient_);
     connect(mqttBridge_.get(), &MqttBridge::messageReceived,
             configPanel_, &ConfigPanel::appendMessage);
+    connect(mqttBridge_.get(), &MqttBridge::messageReceived,
+            deviceView_, &DeviceView::updateDevice);
 
     configPanel_->onConnected();
     ui->statusbar->showMessage("Connected: " + brokerUrl);
