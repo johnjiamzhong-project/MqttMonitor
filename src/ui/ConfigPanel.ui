@@ -6,108 +6,127 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
-    <height>260</height>
+    <width>800</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Config</string>
   </property>
   <layout class="QVBoxLayout" name="rootLayout">
+   <property name="spacing"><number>0</number></property>
+   <property name="leftMargin"><number>0</number></property>
+   <property name="topMargin"><number>0</number></property>
+   <property name="rightMargin"><number>0</number></property>
+   <property name="bottomMargin"><number>0</number></property>
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>MQTT Connection</string>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <layout class="QVBoxLayout" name="groupLayout">
-      <item>
-       <layout class="QFormLayout" name="formLayout">
-        <item row="0" column="0">
-         <widget class="QLabel" name="labelBroker">
-          <property name="text"><string>Broker URL</string></property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="brokerEdit">
-          <property name="text"><string>tcp://localhost:1883</string></property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="labelClientId">
-          <property name="text"><string>Client ID</string></property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="clientIdEdit">
-          <property name="text"><string>MqttMonitor-1</string></property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="labelUsername">
-          <property name="text"><string>Username</string></property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLineEdit" name="usernameEdit"/>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="labelPassword">
-          <property name="text"><string>Password</string></property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="passwordEdit">
-          <property name="echoMode">
-           <enum>QLineEdit::Password</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="labelTopic">
-          <property name="text"><string>Topic</string></property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QLineEdit" name="topicEdit">
-          <property name="text"><string>#</string></property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QLabel" name="statusLabel">
-        <property name="text"><string/></property>
-        <property name="styleSheet">
-         <string>color: red;</string>
-        </property>
-        <property name="wordWrap"><bool>true</bool></property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="btnLayout">
-        <item>
-         <widget class="QPushButton" name="connectBtn">
-          <property name="text"><string>Connect</string></property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="disconnectBtn">
-          <property name="text"><string>Disconnect</string></property>
-          <property name="enabled"><bool>false</bool></property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
+     <widget class="QWidget" name="formContainer" native="true">
+      <layout class="QVBoxLayout" name="formVLayout">
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>MQTT Connection</string>
+         </property>
+         <layout class="QVBoxLayout" name="groupLayout">
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelBroker">
+              <property name="text"><string>Broker URL</string></property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="brokerEdit">
+              <property name="text"><string>tcp://localhost:1883</string></property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="labelClientId">
+              <property name="text"><string>Client ID</string></property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="clientIdEdit">
+              <property name="text"><string>MqttMonitor-1</string></property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="labelUsername">
+              <property name="text"><string>Username</string></property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="usernameEdit"/>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="labelPassword">
+              <property name="text"><string>Password</string></property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="passwordEdit">
+              <property name="echoMode">
+               <enum>QLineEdit::Password</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="labelTopic">
+              <property name="text"><string>Topic</string></property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="topicEdit">
+              <property name="text"><string>#</string></property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="statusLabel">
+            <property name="text"><string/></property>
+            <property name="styleSheet">
+             <string>color: red;</string>
+            </property>
+            <property name="wordWrap"><bool>true</bool></property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="btnLayout">
+            <item>
+             <widget class="QPushButton" name="connectBtn">
+              <property name="text"><string>Connect</string></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="disconnectBtn">
+              <property name="text"><string>Disconnect</string></property>
+              <property name="enabled"><bool>false</bool></property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0">
+          <size><width>20</width><height>40</height></size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QPlainTextEdit" name="messageEdit">
+      <property name="readOnly"><bool>true</bool></property>
+     </widget>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation"><enum>Qt::Vertical</enum></property>
-     <property name="sizeHint" stdset="0">
-      <size><width>20</width><height>40</height></size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

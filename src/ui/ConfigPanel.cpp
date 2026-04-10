@@ -1,10 +1,24 @@
 #include "ConfigPanel.h"
 #include "ui_ConfigPanel.h"
 
+#include <QFont>
+#include <QDateTime>
+
 ConfigPanel::ConfigPanel(QWidget* parent)
     : QWidget(parent), ui(new Ui::ConfigPanel)
 {
     ui->setupUi(this);
+
+    // Splitter appearance
+    ui->splitter->setHandleWidth(8);
+    ui->splitter->setStretchFactor(0, 0);
+    ui->splitter->setStretchFactor(1, 1);
+    ui->formContainer->setFixedWidth(300);
+
+    // Message view
+    ui->messageEdit->setFont(QFont("Consolas", 9));
+    ui->messageEdit->setMaximumBlockCount(1000);  // ~500 messages x 2 lines
+
     connect(ui->connectBtn,    &QPushButton::clicked, this, &ConfigPanel::onConnectClicked);
     connect(ui->disconnectBtn, &QPushButton::clicked, this, &ConfigPanel::disconnectRequested);
 }
@@ -18,9 +32,9 @@ void ConfigPanel::onConnectClicked()
 {
     ui->statusLabel->clear();
 
-    const QString broker = ui->brokerEdit->text().trimmed();
+    const QString broker   = ui->brokerEdit->text().trimmed();
     const QString clientId = ui->clientIdEdit->text().trimmed();
-    const QString topic = ui->topicEdit->text().trimmed();
+    const QString topic    = ui->topicEdit->text().trimmed();
 
     if (broker.isEmpty()) {
         ui->statusLabel->setText("Broker URL cannot be empty.");
@@ -44,7 +58,6 @@ void ConfigPanel::onConnectClicked()
     );
 }
 
-// Called by MainWindow after MqttClient::connect() succeeds
 void ConfigPanel::onConnected()
 {
     ui->statusLabel->clear();
@@ -54,11 +67,17 @@ void ConfigPanel::onConnected()
     ui->clientIdEdit->setEnabled(false);
 }
 
-// Called by MainWindow after MqttClient::disconnect() or on connection lost
 void ConfigPanel::onDisconnected()
 {
     ui->connectBtn->setEnabled(true);
     ui->disconnectBtn->setEnabled(false);
     ui->brokerEdit->setEnabled(true);
     ui->clientIdEdit->setEnabled(true);
+}
+
+void ConfigPanel::appendMessage(const QString& topic, const QString& payload)
+{
+    const QString ts = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+    ui->messageEdit->appendPlainText(
+        QString("[%1]  topic:[%2]\n%3").arg(ts, topic, payload.simplified()));
 }

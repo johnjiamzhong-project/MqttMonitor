@@ -22,6 +22,8 @@ add_executable(MqttMonitor
     src/ui/ConfigPanel.cpp
     src/ui/ConfigPanel.h
     src/ui/ConfigPanel.ui
+    src/ui/DeviceView.cpp
+    src/ui/DeviceView.h
 )
 
 set_target_properties(MqttMonitor PROPERTIES
