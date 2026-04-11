@@ -4,24 +4,53 @@
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QButtonGroup>
+
+#ifdef Q_OS_WIN
+#  include <windows.h>
+#  include <dwmapi.h>
+#  ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#    define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#  endif
+#endif
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle("MqttMonitor");
+
+#ifdef Q_OS_WIN
+    // 通知 DWM 对本窗口使用暗色标题栏（Win10 18985+ / Win11）
+    HWND hwnd = reinterpret_cast<HWND>(winId());
+    BOOL dark = TRUE;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
+#endif
 
     // --- Nav bar ---
     configBtn_ = new QPushButton("配置");
     deviceBtn_ = new QPushButton("设备");
 
+    configBtn_->setCheckable(true);
+    deviceBtn_->setCheckable(true);
+    configBtn_->setChecked(true);   // default page
+
+    // 互斥分组，保证同一时刻只有一个按钮处于 checked 状态
+    auto* navGroup = new QButtonGroup(this);
+    navGroup->setExclusive(true);
+    navGroup->addButton(configBtn_);
+    navGroup->addButton(deviceBtn_);
+
     auto* navBar    = new QWidget(this);
+    navBar->setObjectName("navBar");   // QSS selector: QWidget#navBar
     auto* navLayout = new QVBoxLayout(navBar);
-    navLayout->setContentsMargins(0, 0, 0, 0);
+    navLayout->setContentsMargins(6, 10, 6, 10);
+    navLayout->setSpacing(4);
     navLayout->addWidget(configBtn_);
     navLayout->addWidget(deviceBtn_);
     navLayout->addStretch();
-    navBar->setFixedWidth(72);
+    navBar->setFixedWidth(76);
 
     // --- Pages ---
     configPanel_ = new ConfigPanel;
@@ -34,8 +63,8 @@ MainWindow::MainWindow(QWidget* parent)
     // --- Main layout ---
     auto* container = new QWidget(this);
     auto* hLayout   = new QHBoxLayout(container);
-    hLayout->setContentsMargins(6, 6, 14, 6);
-    hLayout->setSpacing(8);
+    hLayout->setContentsMargins(0, 0, 0, 0);
+    hLayout->setSpacing(0);
     hLayout->addWidget(navBar);
     hLayout->addWidget(stack_);
     setCentralWidget(container);
@@ -53,7 +82,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    // Destroy bridge before client (bridge holds a reference to client)
     mqttBridge_.reset();
     mqttClient_.reset();
     delete ui;

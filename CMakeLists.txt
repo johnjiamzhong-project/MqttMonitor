@@ -10,6 +10,7 @@ find_package(PahoMqttCpp REQUIRED)
 
 add_executable(MqttMonitor
     main.cpp
+    resources.qrc
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
@@ -49,6 +50,8 @@ if(MSVC)
     # Treat all source files as UTF-8 (avoids GBK misparse on Chinese Windows)
     # Also suppresses C4819: non-ASCII chars in third-party Paho headers
     target_compile_options(MqttMonitor PRIVATE /utf-8 /wd4819)
+    # DWM API for dark title bar
+    target_link_libraries(MqttMonitor PRIVATE dwmapi)
 endif()
 
 include(GNUInstallDirs)
