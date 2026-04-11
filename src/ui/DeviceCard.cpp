@@ -16,6 +16,7 @@ DeviceCard::DeviceCard(const QString& deviceId, QWidget* parent)
     , deviceId_(deviceId)
 {
     setFrameShape(QFrame::StyledPanel);
+    setObjectName("DeviceCard");   // QSS: QFrame#DeviceCard
     setFixedSize(220, 160);
 
     auto* root = new QVBoxLayout(this);
@@ -35,7 +36,7 @@ DeviceCard::DeviceCard(const QString& deviceId, QWidget* parent)
     statusLabel_ = new QLabel("未知", this);
     statusLabel_->setAlignment(Qt::AlignCenter);
     statusLabel_->setFixedSize(48, 20);
-    statusLabel_->setStyleSheet("background:#f0a500;color:white;border-radius:3px;");
+    statusLabel_->setStyleSheet("background:#d4a040;color:#1e1e2e;border-radius:3px;font-weight:bold;");
 
     topRow->addWidget(nameLabel_);
     topRow->addWidget(statusLabel_);
@@ -101,9 +102,9 @@ void DeviceCard::mousePressEvent(QMouseEvent* event)
 void DeviceCard::updateSelectionStyle()
 {
     if (selected_)
-        setStyleSheet("DeviceCard { border: 2px solid #2980b9; background: #eaf4fb; border-radius: 4px; }");
+        setStyleSheet("QFrame#DeviceCard { border: 2px solid #89b4fa; background-color: #2a2a45; border-radius: 6px; }");
     else
-        setStyleSheet("");
+        setStyleSheet("");  // 回退到全局 QSS 中 QFrame#DeviceCard 的默认样式
 }
 
 void DeviceCard::contextMenuEvent(QContextMenuEvent* event)
@@ -118,12 +119,12 @@ void DeviceCard::setStatus(const QString& status)
 {
     if (status == "online") {
         statusLabel_->setText("在线");
-        statusLabel_->setStyleSheet("background:#27ae60;color:white;border-radius:3px;");
+        statusLabel_->setStyleSheet("background:#40a870;color:#1e1e2e;border-radius:3px;font-weight:bold;");
     } else if (status == "offline") {
         statusLabel_->setText("离线");
-        statusLabel_->setStyleSheet("background:#e74c3c;color:white;border-radius:3px;");
+        statusLabel_->setStyleSheet("background:#e05c6e;color:#1e1e2e;border-radius:3px;font-weight:bold;");
     } else {
         statusLabel_->setText("未知");
-        statusLabel_->setStyleSheet("background:#f0a500;color:white;border-radius:3px;");
+        statusLabel_->setStyleSheet("background:#d4a040;color:#1e1e2e;border-radius:3px;font-weight:bold;");
     }
 }
