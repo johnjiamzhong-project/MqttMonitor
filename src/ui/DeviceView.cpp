@@ -1,11 +1,18 @@
 #include "DeviceView.h"
 #include "DeviceCard.h"
+#include "AddDeviceDialog.h"
 
 #include <QScrollArea>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QGridLayout>
 #include <QWidget>
 #include <QFrame>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPlainTextEdit>
+#include <QComboBox>
+#include <QPushButton>
 #include <QJsonDocument>
 #include <QJsonObject>
 
@@ -14,6 +21,14 @@ static constexpr int kColumns = 3;
 DeviceView::DeviceView(QWidget* parent)
     : QWidget(parent)
 {
+    // --- Toolbar ---
+    auto* addBtn  = new QPushButton("+ 添加设备", this);
+    auto* toolbar = new QHBoxLayout;
+    toolbar->addWidget(addBtn);
+    toolbar->addStretch();
+    connect(addBtn, &QPushButton::clicked, this, &DeviceView::onAddDeviceClicked);
+
+    // --- Scroll area ---
     auto* scroll = new QScrollArea(this);
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
@@ -23,12 +38,68 @@ DeviceView::DeviceView(QWidget* parent)
     grid_->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     grid_->setSpacing(12);
     grid_->setContentsMargins(12, 12, 12, 12);
-
     scroll->setWidget(content);
 
+    // --- Command panel (hidden until selection) ---
+    cmdPanel_ = new QWidget(this);
+    auto* cmdLayout = new QVBoxLayout(cmdPanel_);
+    cmdLayout->setContentsMargins(8, 6, 8, 8);
+    cmdLayout->setSpacing(6);
+
+    // Top row: selection info + clear button
+    selectionLabel_ = new QLabel(this);
+    auto* clearBtn  = new QPushButton("取消选择", this);
+    clearBtn->setFixedWidth(80);
+    auto* infoRow = new QHBoxLayout;
+    infoRow->addWidget(selectionLabel_);
+    infoRow->addStretch();
+    infoRow->addWidget(clearBtn);
+    cmdLayout->addLayout(infoRow);
+
+    // Separator
+    auto* sep = new QFrame(this);
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Sunken);
+    cmdLayout->addWidget(sep);
+
+    // Controls row: Topic + QoS + Send
+    topicEdit_ = new QLineEdit(this);
+    topicEdit_->setPlaceholderText("目标 Topic，如 devices/{device_id}/cmd");
+
+    qosCombo_ = new QComboBox(this);
+    qosCombo_->addItems({"QoS 0", "QoS 1", "QoS 2"});
+    qosCombo_->setCurrentIndex(1);
+    qosCombo_->setFixedWidth(72);
+
+    auto* sendBtn = new QPushButton("发送", this);
+    sendBtn->setFixedWidth(56);
+
+    auto* ctrlRow = new QHBoxLayout;
+    ctrlRow->addWidget(new QLabel("Topic:", this));
+    ctrlRow->addWidget(topicEdit_, 1);
+    ctrlRow->addWidget(qosCombo_);
+    ctrlRow->addWidget(sendBtn);
+    cmdLayout->addLayout(ctrlRow);
+
+    // Payload
+    payloadEdit_ = new QPlainTextEdit(this);
+    payloadEdit_->setPlaceholderText("Payload（JSON 或纯文本）");
+    payloadEdit_->setFixedHeight(72);
+    payloadEdit_->setFont(QFont("Consolas", 9));
+    cmdLayout->addWidget(payloadEdit_);
+
+    cmdPanel_->hide();
+
+    connect(clearBtn, &QPushButton::clicked, this, &DeviceView::onClearSelectionClicked);
+    connect(sendBtn,  &QPushButton::clicked, this, &DeviceView::onSendClicked);
+
+    // --- Root layout ---
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
-    root->addWidget(scroll);
+    root->setSpacing(0);
+    root->addLayout(toolbar);
+    root->addWidget(scroll, 1);
+    root->addWidget(cmdPanel_);
 }
 
 void DeviceView::updateDevice(const QString& /*topic*/, const QString& payload)
@@ -42,13 +113,115 @@ void DeviceView::updateDevice(const QString& /*topic*/, const QString& payload)
     if (id.isEmpty())
         return;
 
-    DeviceCard* card = cards_.value(id, nullptr);
-    if (!card) {
-        card = new DeviceCard(id, grid_->parentWidget());
-        cards_[id] = card;
-        int pos = cards_.size() - 1;
-        grid_->addWidget(card, pos / kColumns, pos % kColumns);
-    }
+    if (!cards_.contains(id))
+        addCard(id, obj["name"].toString());
 
-    card->update(obj);
+    cards_[id]->update(obj);
+}
+
+void DeviceView::onAddDeviceClicked()
+{
+    AddDeviceDialog dlg(this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    const QString id   = dlg.deviceId();
+    const QString name = dlg.deviceName();
+
+    if (id.isEmpty() || cards_.contains(id))
+        return;
+
+    addCard(id, name.isEmpty() ? id : name);
+}
+
+void DeviceView::removeDevice(const QString& deviceId)
+{
+    DeviceCard* card = cards_.take(deviceId);
+    if (!card)
+        return;
+
+    selectedIds_.remove(deviceId);
+    updateCommandPanel();
+
+    grid_->removeWidget(card);
+    card->deleteLater();
+    rebuildGrid();
+}
+
+void DeviceView::onCardSelectionChanged(const QString& deviceId, bool selected)
+{
+    if (selected)
+        selectedIds_.insert(deviceId);
+    else
+        selectedIds_.remove(deviceId);
+
+    updateCommandPanel();
+}
+
+void DeviceView::onSendClicked()
+{
+    const QString topicTpl = topicEdit_->text().trimmed();
+    const QString payload  = payloadEdit_->toPlainText();
+    const int     qos      = qosCombo_->currentIndex();
+
+    if (topicTpl.isEmpty() || payload.isEmpty())
+        return;
+
+    for (const QString& id : std::as_const(selectedIds_)) {
+        QString topic = topicTpl;
+        topic.replace("{device_id}", id);
+        emit publishRequested(topic, payload, qos);
+    }
+}
+
+void DeviceView::onClearSelectionClicked()
+{
+    for (const QString& id : std::as_const(selectedIds_)) {
+        if (DeviceCard* card = cards_.value(id))
+            card->setSelected(false);
+    }
+    // setSelected emits selectionChanged which clears selectedIds_ one by one,
+    // but to avoid iteration-while-modifying, clear directly after the loop.
+    selectedIds_.clear();
+    updateCommandPanel();
+}
+
+void DeviceView::addCard(const QString& id, const QString& name)
+{
+    auto* card = new DeviceCard(id, grid_->parentWidget());
+    if (!name.isEmpty() && name != id) {
+        QJsonObject obj;
+        obj["name"] = name;
+        card->update(obj);
+    }
+    cards_[id] = card;
+    connect(card, &DeviceCard::removeRequested,   this, &DeviceView::removeDevice);
+    connect(card, &DeviceCard::selectionChanged,  this, &DeviceView::onCardSelectionChanged);
+
+    int pos = cards_.size() - 1;
+    grid_->addWidget(card, pos / kColumns, pos % kColumns);
+}
+
+void DeviceView::rebuildGrid()
+{
+    const QList<DeviceCard*> list = cards_.values();
+    for (DeviceCard* c : list)
+        grid_->removeWidget(c);
+
+    int pos = 0;
+    for (DeviceCard* c : list) {
+        grid_->addWidget(c, pos / kColumns, pos % kColumns);
+        ++pos;
+    }
+}
+
+void DeviceView::updateCommandPanel()
+{
+    const int n = selectedIds_.size();
+    if (n == 0) {
+        cmdPanel_->hide();
+        return;
+    }
+    selectionLabel_->setText(QString("已选 %1 台设备").arg(n));
+    cmdPanel_->show();
 }

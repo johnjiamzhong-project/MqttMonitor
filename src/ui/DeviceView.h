@@ -2,9 +2,14 @@
 
 #include <QWidget>
 #include <QMap>
+#include <QSet>
 #include <QString>
 
 class QGridLayout;
+class QLabel;
+class QLineEdit;
+class QPlainTextEdit;
+class QComboBox;
 class DeviceCard;
 
 class DeviceView : public QWidget {
@@ -13,10 +18,32 @@ class DeviceView : public QWidget {
 public:
     explicit DeviceView(QWidget* parent = nullptr);
 
+signals:
+    void publishRequested(const QString& topic, const QString& payload, int qos);
+
 public slots:
     void updateDevice(const QString& topic, const QString& payload);
 
+private slots:
+    void onAddDeviceClicked();
+    void removeDevice(const QString& deviceId);
+    void onCardSelectionChanged(const QString& deviceId, bool selected);
+    void onSendClicked();
+    void onClearSelectionClicked();
+
 private:
-    QGridLayout*           grid_;
+    void addCard(const QString& id, const QString& name);
+    void rebuildGrid();
+    void updateCommandPanel();
+
+    QGridLayout*               grid_;
     QMap<QString, DeviceCard*> cards_;
+    QSet<QString>              selectedIds_;
+
+    // Command panel widgets
+    QWidget*       cmdPanel_;
+    QLabel*        selectionLabel_;
+    QLineEdit*     topicEdit_;
+    QPlainTextEdit* payloadEdit_;
+    QComboBox*     qosCombo_;
 };

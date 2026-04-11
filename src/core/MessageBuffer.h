@@ -6,10 +6,11 @@
 #include <string>
 #include <vector>
 
+// 单条 MQTT 消息，由 Paho 回调线程写入，UI 主线程读取
 struct MqttMessage {
-    std::string topic;
-    std::string payload;
-    long long timestamp;  // milliseconds
+    std::string topic;     // 消息主题，如 devices/device001/status
+    std::string payload;   // 消息体，原始字符串（通常为 JSON）
+    long long timestamp;   // 收到时刻的 Unix 毫秒时间戳
 
     MqttMessage(const std::string& t, const std::string& p, long long ts)
         : topic(t), payload(p), timestamp(ts) {}

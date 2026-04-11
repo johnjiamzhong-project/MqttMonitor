@@ -26,6 +26,8 @@ add_executable(MqttMonitor
     src/ui/DeviceView.h
     src/ui/DeviceCard.cpp
     src/ui/DeviceCard.h
+    src/ui/AddDeviceDialog.cpp
+    src/ui/AddDeviceDialog.h
 )
 
 set_target_properties(MqttMonitor PROPERTIES

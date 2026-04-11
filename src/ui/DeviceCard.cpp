@@ -6,6 +6,10 @@
 #include <QLabel>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QContextMenuEvent>
+#include <QMouseEvent>
+#include <QMenu>
+#include <QAction>
 
 DeviceCard::DeviceCard(const QString& deviceId, QWidget* parent)
     : QFrame(parent)
@@ -75,6 +79,39 @@ void DeviceCard::update(const QJsonObject& obj)
             dataLayout_->addRow(it.key() + ":", new QLabel(val, this));
         }
     }
+}
+
+void DeviceCard::setSelected(bool selected)
+{
+    selected_ = selected;
+    updateSelectionStyle();
+    emit selectionChanged(deviceId_, selected_);
+}
+
+void DeviceCard::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton) {
+        selected_ = !selected_;
+        updateSelectionStyle();
+        emit selectionChanged(deviceId_, selected_);
+    }
+    QFrame::mousePressEvent(event);
+}
+
+void DeviceCard::updateSelectionStyle()
+{
+    if (selected_)
+        setStyleSheet("DeviceCard { border: 2px solid #2980b9; background: #eaf4fb; border-radius: 4px; }");
+    else
+        setStyleSheet("");
+}
+
+void DeviceCard::contextMenuEvent(QContextMenuEvent* event)
+{
+    QMenu menu(this);
+    QAction* del = menu.addAction("删除设备");
+    if (menu.exec(event->globalPos()) == del)
+        emit removeRequested(deviceId_);
 }
 
 void DeviceCard::setStatus(const QString& status)

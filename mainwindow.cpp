@@ -84,9 +84,17 @@ void MainWindow::onConnectRequested(const QString& brokerUrl,
             configPanel_, &ConfigPanel::appendMessage);
     connect(mqttBridge_.get(), &MqttBridge::messageReceived,
             deviceView_, &DeviceView::updateDevice);
+    connect(deviceView_, &DeviceView::publishRequested,
+            this, &MainWindow::onPublishRequested);
 
     configPanel_->onConnected();
     ui->statusbar->showMessage("Connected: " + brokerUrl);
+}
+
+void MainWindow::onPublishRequested(const QString& topic, const QString& payload, int qos)
+{
+    if (mqttClient_ && mqttClient_->isConnected())
+        mqttClient_->publish(topic.toStdString(), payload.toStdString(), qos);
 }
 
 void MainWindow::onDisconnectRequested()
