@@ -42,7 +42,7 @@ CMakeLists.txt                        ✅
 
 ---
 
-## Phase 3 — 设备管理 ⏳ 进行中
+## Phase 3 — 设备管理 ✅ 完成
 
 ### 消息 JSON 结构（已确定）
 
@@ -70,7 +70,7 @@ CMakeLists.txt                        ✅
 - Topic 格式：`devices/<device_id>/status`
 - 离线方式：设备主动发 `status: offline`，不依赖心跳超时
 
-### 实施计划（最小改动，编译可见）
+### 实施计划
 
 - [x] **Step 1** 新建 `DeviceCard`（`src/ui/DeviceCard.h / .cpp`）
   - QFrame 固定尺寸
@@ -89,11 +89,28 @@ CMakeLists.txt                        ✅
 
 - [x] **Step 4** `CMakeLists.txt` 添加 `DeviceCard.h / .cpp`
 
-### 后续待做
+- [x] **Step 5** 手动添加/删除设备
+  - 新建 `AddDeviceDialog`（`src/ui/AddDeviceDialog.h / .cpp`）：填写设备 ID + 名称
+  - DeviceView 顶部工具栏：`+ 添加设备` 按钮
+  - DeviceCard 右键菜单：`删除设备`，触发 `removeRequested` 信号
 
-- [ ] 手动添加/删除设备
-- [ ] 自动发现（监听通配符 Topic，如 `devices/#`）
-- [ ] 批量指令群发
+- [x] **Step 6** 自动发现
+  - 收到新 `device_id` 的消息时自动生成卡片（配合通配符订阅如 `devices/#`）
+
+- [x] **Step 7** 多选设备 + 批量指令群发
+  - DeviceCard 左键点击切换选中状态（蓝色边框高亮），发出 `selectionChanged` 信号
+  - DeviceView 底部指令面板（选中后显示）：Topic / Payload / QoS 输入 + 发送按钮
+  - Topic 支持 `{device_id}` 占位符，批量发送时自动替换为各设备 ID
+  - MainWindow 新增 `onPublishRequested` 槽，调用 `MqttClient::publish()`
+
+**涉及文件**
+```
+src/ui/DeviceCard.h / .cpp          ✅ 含选中状态、右键菜单
+src/ui/DeviceView.h / .cpp          ✅ 卡片网格 + 底部指令面板
+src/ui/AddDeviceDialog.h / .cpp     ✅ 新建
+mainwindow.h / .cpp                 ✅ onPublishRequested 槽
+CMakeLists.txt                      ✅ 新增 AddDeviceDialog 源文件
+```
 
 ---
 
