@@ -144,9 +144,9 @@ MqttMonitor/
     │   └── MqttBridge.h / .cpp        # Paho 回调 → Qt 信号
     └── ui/
         ├── ConfigPanel.h / .cpp / .ui  # 配置页（含消息列表）
-        ├── DeviceView.h / .cpp         # 设备页（Phase 3 实现中）
-        ├── DeviceCard.h / .cpp         # 设备卡片（待实现）
-        └── DeviceDetailView.h / .cpp   # 设备详情（待实现）
+        ├── DeviceView.h / .cpp         # 设备页（卡片网格 + 指令面板）
+        ├── DeviceCard.h / .cpp         # 设备卡片（状态展示 + 多选）
+        └── AddDeviceDialog.h / .cpp    # 手动添加设备对话框
 ```
 
 ---
