@@ -110,14 +110,14 @@ Paho 的消息回调运行在子线程，Bridge 层通过 `Qt::QueuedConnection`
 - [x] MainWindow：navBar（配置/设备）+ QStackedWidget 双页结构
 - [x] DeviceView 占位类（待 Phase 3 实现）
 
-### Phase 3 — 设备管理 ⏳ 进行中
+### Phase 3 — 设备管理 ✅ 完成
 - [x] 设备消息 JSON 结构确定（device_id / name / status / timestamp / data）
-- [ ] DeviceView 实现（QScrollArea + QGridLayout 卡片网格）
-- [ ] DeviceCard 类（展示 name / status / data KV）
-- [ ] JSON 解析（Qt5 QJsonDocument）
-- [ ] 手动添加/删除设备
-- [ ] 自动发现：监听通配符 Topic（如 `devices/#`），自动生成卡片
-- [ ] 多选设备 + 指令群发
+- [x] DeviceView 实现（QScrollArea + QGridLayout 卡片网格）
+- [x] DeviceCard 类（展示 name / status / data KV）
+- [x] JSON 解析（Qt5 QJsonDocument）
+- [x] 手动添加/删除设备（对话框填写 ID + 名称；右键菜单删除）
+- [x] 自动发现：收到新 device_id 消息时自动生成卡片（配合通配符订阅如 `devices/#`）
+- [x] 多选设备 + 指令群发（左键点击卡片选中/取消；底部面板填写 Topic / Payload / QoS 批量发送；Topic 支持 `{device_id}` 占位符）
 
 ### Phase 4 — 扩展模块（后续迭代）
 - [ ] 日志模块：消息历史记录到本地文件
@@ -186,3 +186,32 @@ devices/<device_id>/status
 
 - 设备离线时主动发送 `status: offline` 消息，不依赖心跳超时
 - `data` 字段结构自由，程序以 KV 列表形式展示在卡片下方
+
+---
+
+## 调试工具
+
+### MQTTX 定时发送脚本
+
+在 MQTTX 的定时发送功能中使用以下脚本，可模拟设备持续上报温湿度数据：
+
+```javascript
+function handlePayload(value) {
+  let msg = typeof value === 'string' ? JSON.parse(value) : value;
+
+  msg.timestamp = Date.now();
+  msg.data = {
+    temperature: +(20 + Math.random() * 15).toFixed(1), // 模拟 20-35 度
+    humidity: Math.floor(40 + Math.random() * 30)       // 模拟 40-70% 湿度
+  };
+
+  return JSON.stringify(msg, null, 2);
+}
+
+execute(handlePayload);
+```
+
+**使用方式：**
+1. 在 MQTTX 新建连接，Topic 填写 `<device_id>/status`
+2. Payload 填写包含完整字段的初始 JSON（`device_id`、`name`、`status` 等固定字段在此填写）
+3. 开启定时发送，选择上方脚本，脚本会自动覆盖 `timestamp` 和 `data` 字段

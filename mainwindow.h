@@ -29,6 +29,7 @@ private slots:
                             const QString& password,
                             const QString& topic);
     void onDisconnectRequested();
+    void onPublishRequested(const QString& topic, const QString& payload, int qos);
 
 private:
     Ui::MainWindow* ui;
