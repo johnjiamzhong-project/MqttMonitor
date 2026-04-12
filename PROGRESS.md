@@ -114,7 +114,49 @@ CMakeLists.txt                      ✅ 新增 AddDeviceDialog 源文件
 
 ---
 
-## Phase 4 — 扩展模块 ⏳ 后续迭代
+## UI 风格优化 ✅ 完成（2026-04-11）
+
+- [x] 新建 `src/ui/dark.qss`：Catppuccin Mocha 暗黑主题，覆盖所有控件（Button / LineEdit / PlainTextEdit / ComboBox / GroupBox / ScrollBar / StatusBar 等）
+- [x] 新建 `resources.qrc`，将 QSS 嵌入可执行文件
+- [x] `main.cpp`：设置 Fusion 风格基底 + 从资源加载全局样式表；窗口初始尺寸改为 1100×680
+- [x] `mainwindow.cpp`：navBar 设 `objectName("navBar")` 供 QSS 精确定位；导航按钮改为 `setCheckable` + `QButtonGroup` 互斥，切换页面时自动高亮当前项；调用 `DwmSetWindowAttribute(DWMWA_USE_IMMERSIVE_DARK_MODE)` 使 Win11 原生标题栏同步变黑
+- [x] `DeviceCard.cpp`：设 `objectName("DeviceCard")`，选中边框改为 `#89b4fa`（蓝），非选中状态回退到全局 QSS；状态 badge 颜色与暗色背景对比度调整（在线绿 / 离线红 / 未知黄）
+- [x] `ConfigPanel.ui`：错误提示 Label 颜色改为 `#f38ba8`（玫瑰红，适配暗色背景）
+- [x] `CMakeLists.txt`：添加 `resources.qrc`；MSVC 分支链接 `dwmapi`
+
+**涉及文件**
+```
+src/ui/dark.qss                 ✅ 新建
+resources.qrc                   ✅ 新建
+main.cpp                        ✅ Fusion + QSS 加载
+mainwindow.cpp                  ✅ navBar / 互斥按钮 / DWM 暗色标题栏
+src/ui/DeviceCard.cpp           ✅ objectName + 选中/状态样式
+src/ui/ConfigPanel.ui           ✅ 错误标签颜色
+CMakeLists.txt                  ✅ resources.qrc + dwmapi
+```
+
+---
+
+## Phase 4 — 扩展模块
+
+### 多套配置持久化 ✅ 完成（2026-04-12）
+
+- [x] 新建 `ConfigStore`（`src/core/ConfigStore.h / .cpp`）：JSON 读写，Profile 增删改查，存储路径 `%APPDATA%\MqttMonitor\profiles.json`
+- [x] `ConfigPanel.ui`：GroupBox 顶部新增配置选择下拉框（profileCombo）+ 保存/删除按钮
+- [x] `ConfigPanel.h / .cpp`：集成 ConfigStore，实现配置切换/保存/删除逻辑；连接时锁定下拉框防误操作；启动时自动恢复上次使用的配置
+- [x] `CMakeLists.txt`：添加 ConfigStore.h / .cpp
+
+**涉及文件**
+```
+src/core/ConfigStore.h / .cpp       ✅ 新建
+src/ui/ConfigPanel.ui               ✅ 顶部加配置选择行
+src/ui/ConfigPanel.h / .cpp         ✅ 集成 ConfigStore
+CMakeLists.txt                      ✅ 新增源文件
+```
+
+---
+
+### 待开发
 
 - [ ] 日志模块
-- [ ] 数据库模块 + 多配置切换
+- [ ] 数据库模块

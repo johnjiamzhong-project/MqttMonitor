@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QString>
+#include "../core/ConfigStore.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ConfigPanel; }
@@ -29,7 +30,14 @@ public slots:
 
 private slots:
     void onConnectClicked();
+    void onProfileSelected(const QString& name);
+    void onSaveProfileClicked();
+    void onDeleteProfileClicked();
 
 private:
+    void populateProfileCombo();
+    void loadProfile(const QString& name);
+
     Ui::ConfigPanel* ui;
+    ConfigStore* store_;
 };

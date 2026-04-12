@@ -18,6 +18,8 @@ add_executable(MqttMonitor
     src/core/MqttClient.h
     src/core/MessageBuffer.cpp
     src/core/MessageBuffer.h
+    src/core/ConfigStore.cpp
+    src/core/ConfigStore.h
     src/bridge/MqttBridge.cpp
     src/bridge/MqttBridge.h
     src/ui/ConfigPanel.cpp
