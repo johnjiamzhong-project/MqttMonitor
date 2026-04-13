@@ -20,6 +20,9 @@ add_executable(MqttMonitor
     src/core/MessageBuffer.h
     src/core/ConfigStore.cpp
     src/core/ConfigStore.h
+    src/core/CardRuleConfig.h
+    src/core/CardRuleStore.cpp
+    src/core/CardRuleStore.h
     src/bridge/MqttBridge.cpp
     src/bridge/MqttBridge.h
     src/ui/ConfigPanel.cpp
@@ -31,6 +34,8 @@ add_executable(MqttMonitor
     src/ui/DeviceCard.h
     src/ui/AddDeviceDialog.cpp
     src/ui/AddDeviceDialog.h
+    src/ui/CardRuleDialog.cpp
+    src/ui/CardRuleDialog.h
 )
 
 set_target_properties(MqttMonitor PROPERTIES

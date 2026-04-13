@@ -1,6 +1,8 @@
 #include "DeviceView.h"
 #include "DeviceCard.h"
 #include "AddDeviceDialog.h"
+#include "CardRuleDialog.h"
+#include "../core/CardRuleStore.h"
 
 #include <QScrollArea>
 #include <QVBoxLayout>
@@ -21,12 +23,20 @@ static constexpr int kColumns = 3;
 DeviceView::DeviceView(QWidget* parent)
     : QWidget(parent)
 {
+    // --- CardRuleStore: load persisted field-name mappings ---
+    ruleStore_ = new CardRuleStore(this);
+    ruleStore_->load();
+    cardRule_ = ruleStore_->config();
+
     // --- Toolbar ---
     auto* addBtn  = new QPushButton("+ 添加设备", this);
+    auto* ruleBtn = new QPushButton("卡片规则", this);
     auto* toolbar = new QHBoxLayout;
     toolbar->addWidget(addBtn);
+    toolbar->addWidget(ruleBtn);
     toolbar->addStretch();
-    connect(addBtn, &QPushButton::clicked, this, &DeviceView::onAddDeviceClicked);
+    connect(addBtn,  &QPushButton::clicked, this, &DeviceView::onAddDeviceClicked);
+    connect(ruleBtn, &QPushButton::clicked, this, &DeviceView::onCardRuleClicked);
 
     // --- Scroll area ---
     auto* scroll = new QScrollArea(this);
@@ -109,14 +119,42 @@ void DeviceView::updateDevice(const QString& /*topic*/, const QString& payload)
         return;
 
     const QJsonObject obj = doc.object();
-    const QString id = obj["device_id"].toString();
+    const QString id = obj[cardRule_.fieldDeviceId].toString();
     if (id.isEmpty())
         return;
 
     if (!cards_.contains(id))
-        addCard(id, obj["name"].toString());
+        addCard(id, obj[cardRule_.fieldName].toString());
 
-    cards_[id]->update(obj);
+    // Translate user-configured field names / status values to internal fixed keys
+    QJsonObject normalised;
+    if (obj.contains(cardRule_.fieldName))
+        normalised["name"] = obj[cardRule_.fieldName];
+    if (obj.contains(cardRule_.fieldData))
+        normalised["data"] = obj[cardRule_.fieldData];
+    if (obj.contains(cardRule_.fieldStatus)) {
+        const QString raw = obj[cardRule_.fieldStatus].toString();
+        if (raw == cardRule_.statusOnlineValue)
+            normalised["status"] = QStringLiteral("online");
+        else if (raw == cardRule_.statusOfflineValue)
+            normalised["status"] = QStringLiteral("offline");
+        else
+            normalised["status"] = raw;
+    }
+
+    cards_[id]->update(normalised);
+}
+
+void DeviceView::onCardRuleClicked()
+{
+    CardRuleDialog dlg(cardRule_, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    cardRule_ = dlg.result();
+    ruleStore_->setConfig(cardRule_);
+    ruleStore_->save();
+    // Existing cards are not retroactively updated
 }
 
 void DeviceView::onAddDeviceClicked()

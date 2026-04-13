@@ -1,6 +1,6 @@
 # 开发进度
 
-最后更新：2026-04-10
+最后更新：2026-04-13
 
 ---
 
@@ -152,6 +152,25 @@ src/core/ConfigStore.h / .cpp       ✅ 新建
 src/ui/ConfigPanel.ui               ✅ 顶部加配置选择行
 src/ui/ConfigPanel.h / .cpp         ✅ 集成 ConfigStore
 CMakeLists.txt                      ✅ 新增源文件
+```
+
+---
+
+### 卡片规则（Card Rule）✅ 完成（2026-04-13）
+
+- [x] 新建 `CardRuleConfig`（`src/core/CardRuleConfig.h`）：纯数据结构体，配置 `device_id`/`name`/`status`/`data` 字段名及在线/离线状态值，默认值与原硬编码一致
+- [x] 新建 `CardRuleStore`（`src/core/CardRuleStore.h / .cpp`）：仿 ConfigStore 模式，JSON 持久化至 `%APPDATA%\MqttMonitor\card_rules.json`，temp-file 原子写入，load 容错
+- [x] 新建 `CardRuleDialog`（`src/ui/CardRuleDialog.h / .cpp`）：模态 QDialog，QFormLayout 6 行（4 个字段名 + 在线值 + 离线值），底部提示修改仅对新消息生效
+- [x] `DeviceView`：工具栏新增"卡片规则"按钮；构造时 load 配置；`updateDevice()` 加翻译层，用配置字段名读 JSON 并将状态值归一化为内部固定 key 再传给 DeviceCard；DeviceCard 本身不改动
+- [x] `CMakeLists.txt`：添加 5 个新文件
+
+**涉及文件**
+```
+src/core/CardRuleConfig.h               ✅ 新建
+src/core/CardRuleStore.h / .cpp         ✅ 新建
+src/ui/CardRuleDialog.h / .cpp          ✅ 新建
+src/ui/DeviceView.h / .cpp              ✅ 翻译层 + 按钮
+CMakeLists.txt                          ✅ 新增源文件
 ```
 
 ---

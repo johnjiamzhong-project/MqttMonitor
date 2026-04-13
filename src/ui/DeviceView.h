@@ -4,6 +4,7 @@
 #include <QMap>
 #include <QSet>
 #include <QString>
+#include "../core/CardRuleConfig.h"
 
 class QGridLayout;
 class QLabel;
@@ -11,6 +12,7 @@ class QLineEdit;
 class QPlainTextEdit;
 class QComboBox;
 class DeviceCard;
+class CardRuleStore;
 
 class DeviceView : public QWidget {
     Q_OBJECT
@@ -26,6 +28,7 @@ public slots:
 
 private slots:
     void onAddDeviceClicked();
+    void onCardRuleClicked();
     void removeDevice(const QString& deviceId);
     void onCardSelectionChanged(const QString& deviceId, bool selected);
     void onSendClicked();
@@ -39,6 +42,9 @@ private:
     QGridLayout*               grid_;
     QMap<QString, DeviceCard*> cards_;
     QSet<QString>              selectedIds_;
+
+    CardRuleConfig  cardRule_;
+    CardRuleStore*  ruleStore_;
 
     // Command panel widgets
     QWidget*       cmdPanel_;
