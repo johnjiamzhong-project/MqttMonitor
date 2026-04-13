@@ -23,6 +23,9 @@ add_executable(MqttMonitor
     src/core/CardRuleConfig.h
     src/core/CardRuleStore.cpp
     src/core/CardRuleStore.h
+    src/core/CmdPreset.h
+    src/core/CmdPresetStore.cpp
+    src/core/CmdPresetStore.h
     src/bridge/MqttBridge.cpp
     src/bridge/MqttBridge.h
     src/ui/ConfigPanel.cpp

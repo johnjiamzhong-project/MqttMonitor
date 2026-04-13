@@ -129,6 +129,7 @@ Paho 的消息回调运行在子线程，Bridge 层通过 `Qt::QueuedConnection`
 ### Phase 4 — 扩展模块
 - [x] 多套 Broker 配置切换：命名配置存档，启动自动恢复，JSON 持久化至 `%APPDATA%\MqttMonitor\profiles.json`
 - [x] 卡片规则配置：JSON 字段名（device_id / name / status / data）及状态值（online / offline）均可自定义，规则持久化至 `%APPDATA%\MqttMonitor\card_rules.json`，修改仅对新消息生效
+- [x] 指令预设：群发面板支持保存命名预设（以 topic 命名，重名加 `-2/-3` 后缀），持久化至 `%APPDATA%\MqttMonitor\cmd_presets.json`；上次使用的 topic/payload/QoS 跨重启自动恢复
 - [ ] 日志模块：消息历史记录到本地文件
 - [ ] 数据库模块：SQLite 持久化 + 历史消息查询
 
@@ -150,12 +151,14 @@ MqttMonitor/
     │   ├── MessageBuffer.h / .cpp     # 线程安全消息队列
     │   ├── ConfigStore.h / .cpp       # MQTT 配置持久化
     │   ├── CardRuleConfig.h           # 卡片规则数据结构
-    │   └── CardRuleStore.h / .cpp     # 卡片规则持久化
+    │   ├── CardRuleStore.h / .cpp     # 卡片规则持久化
+    │   ├── CmdPreset.h                # 指令预设数据结构
+    │   └── CmdPresetStore.h / .cpp    # 指令预设持久化
     ├── bridge/
     │   └── MqttBridge.h / .cpp        # Paho 回调 → Qt 信号
     └── ui/
         ├── ConfigPanel.h / .cpp / .ui  # 配置页（含消息列表）
-        ├── DeviceView.h / .cpp         # 设备页（卡片网格 + 指令面板）
+        ├── DeviceView.h / .cpp         # 设备页（卡片网格 + 指令面板 + 预设）
         ├── DeviceCard.h / .cpp         # 设备卡片（状态展示 + 多选）
         ├── AddDeviceDialog.h / .cpp    # 手动添加设备对话框
         └── CardRuleDialog.h / .cpp     # 卡片规则配置对话框

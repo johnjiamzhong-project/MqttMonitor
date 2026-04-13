@@ -3,6 +3,7 @@
 #include "AddDeviceDialog.h"
 #include "CardRuleDialog.h"
 #include "../core/CardRuleStore.h"
+#include "../core/CmdPresetStore.h"
 
 #include <QScrollArea>
 #include <QVBoxLayout>
@@ -27,6 +28,10 @@ DeviceView::DeviceView(QWidget* parent)
     ruleStore_ = new CardRuleStore(this);
     ruleStore_->load();
     cardRule_ = ruleStore_->config();
+
+    // --- CmdPresetStore: load command presets + last used values ---
+    presetStore_ = new CmdPresetStore(this);
+    presetStore_->load();
 
     // --- Toolbar ---
     auto* addBtn  = new QPushButton("+ 添加设备", this);
@@ -56,6 +61,20 @@ DeviceView::DeviceView(QWidget* parent)
     cmdLayout->setContentsMargins(8, 6, 8, 8);
     cmdLayout->setSpacing(6);
 
+    // Preset row: dropdown + save + delete
+    presetCombo_ = new QComboBox(this);
+    presetCombo_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    savePresetBtn_ = new QPushButton("保存", this);
+    savePresetBtn_->setFixedWidth(52);
+    delPresetBtn_ = new QPushButton("删除", this);
+    delPresetBtn_->setFixedWidth(52);
+    auto* presetRow = new QHBoxLayout;
+    presetRow->addWidget(new QLabel("预设:", this));
+    presetRow->addWidget(presetCombo_, 1);
+    presetRow->addWidget(savePresetBtn_);
+    presetRow->addWidget(delPresetBtn_);
+    cmdLayout->addLayout(presetRow);
+
     // Top row: selection info + clear button
     selectionLabel_ = new QLabel(this);
     auto* clearBtn  = new QPushButton("取消选择", this);
@@ -78,7 +97,6 @@ DeviceView::DeviceView(QWidget* parent)
 
     qosCombo_ = new QComboBox(this);
     qosCombo_->addItems({"QoS 0", "QoS 1", "QoS 2"});
-    qosCombo_->setCurrentIndex(1);
     qosCombo_->setFixedWidth(72);
 
     auto* sendBtn = new QPushButton("发送", this);
@@ -100,8 +118,24 @@ DeviceView::DeviceView(QWidget* parent)
 
     cmdPanel_->hide();
 
-    connect(clearBtn, &QPushButton::clicked, this, &DeviceView::onClearSelectionClicked);
-    connect(sendBtn,  &QPushButton::clicked, this, &DeviceView::onSendClicked);
+    // Restore last used values
+    topicEdit_->setText(presetStore_->lastTopic());
+    payloadEdit_->setPlainText(presetStore_->lastPayload());
+    qosCombo_->setCurrentIndex(qBound(0, presetStore_->lastQos(), 2));
+
+    // Populate preset combo
+    refreshPresetCombo();
+
+    connect(clearBtn,      &QPushButton::clicked,        this, &DeviceView::onClearSelectionClicked);
+    connect(sendBtn,       &QPushButton::clicked,        this, &DeviceView::onSendClicked);
+    connect(savePresetBtn_,&QPushButton::clicked,        this, &DeviceView::onSavePresetClicked);
+    connect(delPresetBtn_, &QPushButton::clicked,        this, &DeviceView::onDelPresetClicked);
+    connect(presetCombo_,  QOverload<int>::of(&QComboBox::activated),
+                                                         this, &DeviceView::onPresetSelected);
+    connect(topicEdit_,    &QLineEdit::textChanged,      this, &DeviceView::onCmdFieldChanged);
+    connect(payloadEdit_,  &QPlainTextEdit::textChanged, this, &DeviceView::onCmdFieldChanged);
+    connect(qosCombo_,     QOverload<int>::of(&QComboBox::currentIndexChanged),
+                                                         this, &DeviceView::onCmdFieldChanged);
 
     // --- Root layout ---
     auto* root = new QVBoxLayout(this);
@@ -210,6 +244,60 @@ void DeviceView::onSendClicked()
         topic.replace("{device_id}", id);
         emit publishRequested(topic, payload, qos);
     }
+}
+
+void DeviceView::refreshPresetCombo()
+{
+    presetCombo_->blockSignals(true);
+    presetCombo_->clear();
+    presetCombo_->addItem("— 选择预设 —");
+    for (const CmdPreset& p : presetStore_->presets())
+        presetCombo_->addItem(p.name);
+    presetCombo_->setCurrentIndex(0);
+    presetCombo_->blockSignals(false);
+}
+
+void DeviceView::onPresetSelected(int index)
+{
+    if (index <= 0) return;
+    const QList<CmdPreset> list = presetStore_->presets();
+    if (index - 1 >= list.size()) return;
+
+    const CmdPreset& p = list[index - 1];
+    topicEdit_->setText(p.topic);
+    payloadEdit_->setPlainText(p.payload);
+    qosCombo_->setCurrentIndex(qBound(0, p.qos, 2));
+}
+
+void DeviceView::onSavePresetClicked()
+{
+    const QString topic   = topicEdit_->text().trimmed();
+    const QString payload = payloadEdit_->toPlainText();
+    if (topic.isEmpty()) return;
+
+    presetStore_->addPreset(topic, payload, qosCombo_->currentIndex());
+    refreshPresetCombo();
+
+    // Select the newly added item (last in list)
+    presetCombo_->setCurrentIndex(presetCombo_->count() - 1);
+}
+
+void DeviceView::onDelPresetClicked()
+{
+    const int idx = presetCombo_->currentIndex();
+    if (idx <= 0) return;
+
+    const QString name = presetCombo_->currentText();
+    presetStore_->removePreset(name);
+    refreshPresetCombo();
+}
+
+void DeviceView::onCmdFieldChanged()
+{
+    presetStore_->saveLastUsed(
+        topicEdit_->text().trimmed(),
+        payloadEdit_->toPlainText(),
+        qosCombo_->currentIndex());
 }
 
 void DeviceView::onClearSelectionClicked()

@@ -11,8 +11,10 @@ class QLabel;
 class QLineEdit;
 class QPlainTextEdit;
 class QComboBox;
+class QPushButton;
 class DeviceCard;
 class CardRuleStore;
+class CmdPresetStore;
 
 class DeviceView : public QWidget {
     Q_OBJECT
@@ -33,11 +35,16 @@ private slots:
     void onCardSelectionChanged(const QString& deviceId, bool selected);
     void onSendClicked();
     void onClearSelectionClicked();
+    void onPresetSelected(int index);
+    void onSavePresetClicked();
+    void onDelPresetClicked();
+    void onCmdFieldChanged();
 
 private:
     void addCard(const QString& id, const QString& name);
     void rebuildGrid();
     void updateCommandPanel();
+    void refreshPresetCombo();
 
     QGridLayout*               grid_;
     QMap<QString, DeviceCard*> cards_;
@@ -45,11 +52,15 @@ private:
 
     CardRuleConfig  cardRule_;
     CardRuleStore*  ruleStore_;
+    CmdPresetStore* presetStore_;
 
     // Command panel widgets
-    QWidget*       cmdPanel_;
-    QLabel*        selectionLabel_;
-    QLineEdit*     topicEdit_;
+    QWidget*        cmdPanel_;
+    QLabel*         selectionLabel_;
+    QComboBox*      presetCombo_;
+    QPushButton*    savePresetBtn_;
+    QPushButton*    delPresetBtn_;
+    QLineEdit*      topicEdit_;
     QPlainTextEdit* payloadEdit_;
-    QComboBox*     qosCombo_;
+    QComboBox*      qosCombo_;
 };

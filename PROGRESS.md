@@ -1,6 +1,6 @@
 # 开发进度
 
-最后更新：2026-04-13
+最后更新：2026-04-13（指令预设）
 
 ---
 
@@ -171,6 +171,22 @@ src/core/CardRuleStore.h / .cpp         ✅ 新建
 src/ui/CardRuleDialog.h / .cpp          ✅ 新建
 src/ui/DeviceView.h / .cpp              ✅ 翻译层 + 按钮
 CMakeLists.txt                          ✅ 新增源文件
+```
+
+---
+
+### 指令预设 + 群发信息保留 ✅ 完成（2026-04-13）
+
+- [x] 新建 `CmdPreset`（`src/core/CmdPreset.h`）：纯数据结构体，存储预设的 name/topic/payload/qos
+- [x] 新建 `CmdPresetStore`（`src/core/CmdPresetStore.h / .cpp`）：JSON 持久化至 `%APPDATA%\MqttMonitor\cmd_presets.json`；`addPreset()` 以 topic 为基础命名，重名自动加 `-2/-3` 后缀；额外存储 lastTopic/lastPayload/lastQos 用于跨重启恢复
+- [x] `DeviceView`：指令面板顶部新增预设行（下拉框 + 保存 + 删除）；构造时恢复 lastUsed 到输入框；选择预设自动填入 topic/payload/qos；字段变化实时写入 lastUsed
+
+**涉及文件**
+```
+src/core/CmdPreset.h                ✅ 新建
+src/core/CmdPresetStore.h / .cpp    ✅ 新建
+src/ui/DeviceView.h / .cpp          ✅ 预设行 + lastUsed 恢复
+CMakeLists.txt                      ✅ 新增源文件
 ```
 
 ---
