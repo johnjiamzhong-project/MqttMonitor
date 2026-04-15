@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QDialogButtonBox>
+#include <QPushButton>
 #include <QLabel>
 
 CardRuleDialog::CardRuleDialog(const CardRuleConfig& current, QWidget* parent)
@@ -11,7 +12,7 @@ CardRuleDialog::CardRuleDialog(const CardRuleConfig& current, QWidget* parent)
 {
     setObjectName("CardRuleDialog");
     setWindowTitle("卡片规则");
-    setFixedWidth(360);
+    setFixedWidth(400);
 
     deviceIdEdit_    = new QLineEdit(current.fieldDeviceId,       this);
     nameEdit_        = new QLineEdit(current.fieldName,           this);
@@ -21,6 +22,8 @@ CardRuleDialog::CardRuleDialog(const CardRuleConfig& current, QWidget* parent)
     offlineValueEdit_= new QLineEdit(current.statusOfflineValue,  this);
 
     auto* form = new QFormLayout;
+    form->setSpacing(12);
+    form->setContentsMargins(0, 0, 0, 0);
     form->addRow("设备 ID 字段:", deviceIdEdit_);
     form->addRow("名称字段:",     nameEdit_);
     form->addRow("状态字段:",     statusEdit_);
@@ -34,13 +37,21 @@ CardRuleDialog::CardRuleDialog(const CardRuleConfig& current, QWidget* parent)
 
     auto* buttons = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    buttons->setObjectName("dialogButtonBox");
+    buttons->button(QDialogButtonBox::Ok)->setObjectName("okBtn");
+    buttons->button(QDialogButtonBox::Cancel)->setObjectName("cancelBtn");
+    buttons->button(QDialogButtonBox::Ok)->setText("确定");
+    buttons->button(QDialogButtonBox::Cancel)->setText("取消");
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     auto* root = new QVBoxLayout(this);
+    root->setContentsMargins(16, 16, 16, 16);
+    root->setSpacing(12);
     root->addLayout(form);
+    root->addSpacing(8);
     root->addWidget(hint);
-    root->addSpacing(4);
+    root->addSpacing(8);
     root->addWidget(buttons);
 }
 

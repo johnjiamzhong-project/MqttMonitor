@@ -4,15 +4,20 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QDialogButtonBox>
+#include <QPushButton>
 #include <QLabel>
 
 AddDeviceDialog::AddDeviceDialog(QWidget* parent)
     : QDialog(parent)
 {
+    setObjectName("AddDeviceDialog");
     setWindowTitle("添加设备");
-    setFixedWidth(320);
+    setFixedWidth(360);
 
     auto* form = new QFormLayout;
+    form->setSpacing(12);
+    form->setContentsMargins(0, 0, 0, 0);
+
     idEdit_   = new QLineEdit(this);
     nameEdit_ = new QLineEdit(this);
     idEdit_->setPlaceholderText("如：device001");
@@ -22,11 +27,19 @@ AddDeviceDialog::AddDeviceDialog(QWidget* parent)
 
     auto* buttons = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    buttons->setObjectName("dialogButtonBox");
+    buttons->button(QDialogButtonBox::Ok)->setObjectName("okBtn");
+    buttons->button(QDialogButtonBox::Cancel)->setObjectName("cancelBtn");
+    buttons->button(QDialogButtonBox::Ok)->setText("确定");
+    buttons->button(QDialogButtonBox::Cancel)->setText("取消");
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     auto* root = new QVBoxLayout(this);
+    root->setContentsMargins(16, 16, 16, 16);
+    root->setSpacing(16);
     root->addLayout(form);
+    root->addSpacing(4);
     root->addWidget(buttons);
 }
 

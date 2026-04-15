@@ -127,12 +127,12 @@
            <layout class="QHBoxLayout" name="btnLayout">
             <item>
              <widget class="QPushButton" name="connectBtn">
-              <property name="text"><string>Connect</string></property>
+              <property name="text"><string>连接</string></property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="disconnectBtn">
-              <property name="text"><string>Disconnect</string></property>
+              <property name="text"><string>断开</string></property>
               <property name="enabled"><bool>false</bool></property>
              </widget>
             </item>

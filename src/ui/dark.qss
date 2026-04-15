@@ -239,8 +239,64 @@ QDialog {
     background-color: #1e1e2e;
 }
 
+QDialog#AddDeviceDialog,
+QDialog#CardRuleDialog {
+    background-color: #1e1e2e;
+}
+
 QDialogButtonBox QPushButton {
     min-width: 72px;
+}
+
+QDialogButtonBox QPushButton#okBtn {
+    background-color: #89b4fa;
+    color: #1e1e2e;
+    border: 1px solid #7ba3e6;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QDialogButtonBox QPushButton#okBtn:hover {
+    background-color: #a3c4ff;
+    border-color: #a3c4ff;
+}
+
+QDialogButtonBox QPushButton#okBtn:pressed {
+    background-color: #7ba3e6;
+    color: #1e1e2e;
+    border-color: #7ba3e6;
+}
+
+QDialogButtonBox QPushButton#cancelBtn {
+    background-color: #585b70;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QDialogButtonBox QPushButton#cancelBtn:hover {
+    background-color: #6f7287;
+    border-color: #6f7287;
+}
+
+QDialogButtonBox QPushButton#cancelBtn:pressed {
+    background-color: #45475a;
+    color: #cdd6f4;
+    border-color: #45475a;
+}
+
+QLabel#hintLabel {
+    background-color: #252538;
+    border: 1px solid #45475a;
+    border-radius: 4px;
+    padding: 8px 10px;
+    color: #a6adc8;
+    font-size: 12px;
 }
 
 /* ---------- DeviceCard (QFrame) ---------- */
@@ -261,4 +317,144 @@ QFrame[frameShape="HLine"] {
     background-color: #45475a;
     border: none;
     max-height: 1px;
+}
+
+/* ---------- ConfigPanel Buttons ---------- */
+QPushButton#saveProfileBtn {
+    background-color: #89b4fa;
+    color: #1e1e2e;
+    border: 1px solid #7ba3e6;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QPushButton#saveProfileBtn:hover {
+    background-color: #a3c4ff;
+    border-color: #a3c4ff;
+}
+
+QPushButton#saveProfileBtn:pressed {
+    background-color: #7ba3e6;
+    color: #1e1e2e;
+    border-color: #7ba3e6;
+}
+
+QPushButton#deleteProfileBtn {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+    border: 1px solid #f07a8b;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QPushButton#deleteProfileBtn:hover {
+    background-color: #f5a3ba;
+    border-color: #f5a3ba;
+}
+
+QPushButton#deleteProfileBtn:pressed {
+    background-color: #f07a8b;
+    color: #1e1e2e;
+    border-color: #f07a8b;
+}
+
+QPushButton#deleteProfileBtn:disabled {
+    background-color: #1e1e2e;
+    color: #585b70;
+    border-color: #313244;
+}
+
+QPushButton#connectBtn {
+    background-color: #a6e3a1;
+    color: #1e1e2e;
+    border: 1px solid #94e2d5;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QPushButton#connectBtn:hover {
+    background-color: #b8eeaa;
+    border-color: #b8eeaa;
+}
+
+QPushButton#connectBtn:pressed {
+    background-color: #94d98e;
+    color: #1e1e2e;
+    border-color: #94d98e;
+}
+
+QPushButton#disconnectBtn {
+    background-color: #585b70;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QPushButton#disconnectBtn:hover {
+    background-color: #6f7287;
+    border-color: #6f7287;
+}
+
+QPushButton#disconnectBtn:pressed {
+    background-color: #45475a;
+    color: #cdd6f4;
+    border-color: #45475a;
+}
+
+QPushButton#disconnectBtn:disabled {
+    background-color: #1e1e2e;
+    color: #585b70;
+    border-color: #313244;
+}
+
+/* ---------- DeviceView Toolbar Buttons ---------- */
+QPushButton#addDeviceBtn {
+    background-color: #a6e3a1;
+    color: #1e1e2e;
+    border: 1px solid #94d98e;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QPushButton#addDeviceBtn:hover {
+    background-color: #b8eeaa;
+    border-color: #b8eeaa;
+}
+
+QPushButton#addDeviceBtn:pressed {
+    background-color: #94d98e;
+    color: #1e1e2e;
+    border-color: #94d98e;
+}
+
+QPushButton#cardRuleBtn {
+    background-color: #89b4fa;
+    color: #1e1e2e;
+    border: 1px solid #7ba3e6;
+    border-radius: 4px;
+    padding: 4px 14px;
+    min-height: 26px;
+    font-weight: bold;
+}
+
+QPushButton#cardRuleBtn:hover {
+    background-color: #a3c4ff;
+    border-color: #a3c4ff;
+}
+
+QPushButton#cardRuleBtn:pressed {
+    background-color: #7ba3e6;
+    color: #1e1e2e;
+    border-color: #7ba3e6;
 }

@@ -1,5 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file>src/ui/dark.qss</file>
+        <file>icon/tool.png</file>
+        <file>icon/connect.png</file>
+        <file>icon/star.png</file>
+        <file>icon/save.png</file>
+        <file>icon/delete.png</file>
     </qresource>
 </RCC>

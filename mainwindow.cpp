@@ -5,6 +5,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QButtonGroup>
+#include <QIcon>
+#include <QSize>
 
 #ifdef Q_OS_WIN
 #  include <windows.h>
@@ -20,6 +22,7 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this);
     setWindowTitle("MqttMonitor");
+    setWindowIcon(QIcon(":/icon/star.png"));
 
 #ifdef Q_OS_WIN
     // 通知 DWM 对本窗口使用暗色标题栏（Win10 18985+ / Win11）
@@ -29,8 +32,14 @@ MainWindow::MainWindow(QWidget* parent)
 #endif
 
     // --- Nav bar ---
-    configBtn_ = new QPushButton("配置");
-    deviceBtn_ = new QPushButton("设备");
+    configBtn_ = new QPushButton("");
+    deviceBtn_ = new QPushButton("");
+
+    configBtn_->setIcon(QIcon(":/icon/tool.png"));
+    deviceBtn_->setIcon(QIcon(":/icon/connect.png"));
+
+    configBtn_->setIconSize(QSize(40, 40));
+    deviceBtn_->setIconSize(QSize(40, 40));
 
     configBtn_->setCheckable(true);
     deviceBtn_->setCheckable(true);

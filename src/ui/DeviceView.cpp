@@ -34,9 +34,12 @@ DeviceView::DeviceView(QWidget* parent)
     presetStore_->load();
 
     // --- Toolbar ---
-    auto* addBtn  = new QPushButton("+ 添加设备", this);
+    auto* addBtn  = new QPushButton("添加设备", this);
+    addBtn->setObjectName("addDeviceBtn");
     auto* ruleBtn = new QPushButton("卡片规则", this);
+    ruleBtn->setObjectName("cardRuleBtn");
     auto* toolbar = new QHBoxLayout;
+    toolbar->setSpacing(12);
     toolbar->addWidget(addBtn);
     toolbar->addWidget(ruleBtn);
     toolbar->addStretch();
