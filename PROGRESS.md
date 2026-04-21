@@ -191,6 +191,74 @@ CMakeLists.txt                      ✅ 新增源文件
 
 ---
 
+### 设备断联检测（开发阶段）
+
+**设计完成于** 2026-04-21
+
+**设计要点**
+- 断联判断：三重条件（30秒超时 / MQTT断连 / status=offline），任意一个触发即断联
+- UI 样式：保留原 status 显示，用视觉标记（红边框/灰化）表示断联
+- 检测实现：懒惰轮询（1秒检查一次，仅检查活跃设备子集），支持大量设备
+- 恢复逻辑：新消息到达立即恢复，无延迟确认
+
+**实施任务列表**
+
+- [ ] **Task #1** 定义断联状态数据结构和 DeviceView 基础改造
+  - [ ] 定义 DeviceState 结构体（deviceId / lastMessageTime / isDisconnected）
+  - [ ] 在 DeviceView 添加 `QMap<QString, DeviceState> deviceStates_`
+  - [ ] 在 DeviceView 添加 `QSet<QString> checkQueue_`（待检查队列）
+  - [ ] 更新 addCard() 方法初始化 DeviceState
+
+- [ ] **Task #2** 实现懒惰轮询定时器和检测逻辑
+  - [ ] 添加 `QTimer disconnectCheckTimer_`
+  - [ ] 实现 `checkDisconnectedDevices()` 槽（检查 checkQueue 中超时的设备）
+  - [ ] 实现 `markDeviceDisconnected()` 和 `markDeviceConnected()` 方法
+
+- [ ] **Task #3** 更新消息处理流程，集成超时检测
+  - [ ] 在 `updateDevice()` 中更新 lastMessageTime
+  - [ ] 在 `updateDevice()` 中处理设备恢复逻辑
+  - [ ] 在 `updateDevice()` 中决定是否加入 checkQueue
+
+- [ ] **Task #4** 处理 MQTT 连接断开事件
+  - [ ] 连接 MqttBridge::connectionLost 信号
+  - [ ] 在 `onMqttConnectionLost()` 中标记所有设备为断联
+
+- [ ] **Task #5** DeviceCard 添加断联状态支持和样式
+  - [ ] 添加 Q_PROPERTY(bool disconnected)
+  - [ ] 实现 `setDisconnected(bool)` 方法
+  - [ ] 实现 `isDisconnected()` 查询方法
+
+- [ ] **Task #6** 更新 dark.qss 样式表支持断联指示
+  - [ ] 添加 `DeviceCard[disconnected="true"]` 选择器
+  - [ ] 定义红色边框或灰化背景样式
+
+- [ ] **Task #7** 启动/停止轮询定时器的生命周期管理
+  - [ ] 在 MainWindow 中管理定时器启动/停止
+  - [ ] 在连接时启动，断开时停止
+
+- [ ] **Task #8** 处理设备删除时的状态清理
+  - [ ] 在 `removeDevice()` 中删除 deviceStates_[deviceId]
+  - [ ] 从 checkQueue_ 中移除 deviceId
+
+- [ ] **Task #9** 编译验证和集成测试
+  - [ ] 编译验证无错误
+  - [ ] 测试超时检测（30 秒无消息后显示断联）
+  - [ ] 测试 MQTT 断连（所有设备立即断联）
+  - [ ] 测试恢复逻辑（新消息到达立即恢复）
+  - [ ] 测试多设备场景性能
+
+**涉及文件预期**
+```
+src/ui/DeviceView.h / .cpp              ✅ 数据结构 + 轮询逻辑
+src/ui/DeviceCard.h / .cpp              ✅ 断联状态支持
+src/ui/dark.qss                         ✅ 断联样式
+src/bridge/MqttBridge.h / .cpp          ✅ connectionLost 信号
+mainwindow.h / .cpp                     ✅ 定时器生命周期
+CMakeLists.txt                          ✅ 验证编译
+```
+
+---
+
 ### 待开发
 
 - [ ] 日志模块
