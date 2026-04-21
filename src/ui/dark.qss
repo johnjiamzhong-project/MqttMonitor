@@ -306,6 +306,11 @@ QFrame#DeviceCard {
     border-radius: 6px;
 }
 
+QFrame#DeviceCard[disconnected="true"] {
+    border: 2px solid #f38ba8;
+    background-color: #1e1e2e;
+}
+
 QFrame#DeviceCard QLabel {
     background-color: transparent;
     color: #cdd6f4;

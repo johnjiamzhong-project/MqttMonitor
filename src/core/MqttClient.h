@@ -11,6 +11,8 @@ class MqttClient : public mqtt::callback {
 public:
     // 消息回调函数签名：接收 topic 和 payload
     using MessageCallback = std::function<void(const std::string& topic, const std::string& payload)>;
+    // 连接丢失回调函数签名
+    using ConnectionLostCallback = std::function<void()>;
 
     // 构造函数：broker_url 如 "tcp://192.168.1.100:1883"，client_id 用于 MQTT 连接标识
     MqttClient(const std::string& brokerUrl, const std::string& clientId);
@@ -33,6 +35,8 @@ public:
 
     // 设置消息到达回调，回调运行在 Paho 内部线程
     void setMessageCallback(MessageCallback callback);
+    // 设置连接丢失回调，回调运行在 Paho 内部线程
+    void setConnectionLostCallback(ConnectionLostCallback callback);
 
     // 配置选项
     // Keep-Alive 间隔，默认 60 秒
@@ -45,6 +49,7 @@ private:
     std::string clientId_;
     std::unique_ptr<mqtt::client> client_;
     MessageCallback messageCallback_;
+    ConnectionLostCallback connectionLostCallback_;
     int keepAliveInterval_ = 60;
     int connectTimeout_ = 3000;
 

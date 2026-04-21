@@ -33,7 +33,9 @@ bool MqttClient::connect(const std::string& username, const std::string& passwor
             connOpts.set_password(password);
         }
 
+        std::cerr << "Setting callback..." << std::endl;
         client_->set_callback(*this);
+        std::cerr << "Connecting to broker..." << std::endl;
         client_->connect(connOpts);
         std::cout << "Connected to " << brokerUrl_ << std::endl;
         return true;
@@ -111,6 +113,11 @@ void MqttClient::setMessageCallback(MessageCallback callback)
     messageCallback_ = callback;
 }
 
+void MqttClient::setConnectionLostCallback(ConnectionLostCallback callback)
+{
+    connectionLostCallback_ = callback;
+}
+
 void MqttClient::setKeepAliveInterval(int seconds)
 {
     keepAliveInterval_ = seconds;
@@ -131,4 +138,9 @@ void MqttClient::message_arrived(mqtt::const_message_ptr msg)
 void MqttClient::connection_lost(const std::string& cause)
 {
     std::cerr << "Connection lost: " << cause << std::endl;
+    std::cerr << "connectionLostCallback_ is " << (connectionLostCallback_ ? "SET" : "NOT SET") << std::endl;
+    if (connectionLostCallback_) {
+        std::cerr << "Calling connectionLostCallback_..." << std::endl;
+        connectionLostCallback_();
+    }
 }

@@ -117,6 +117,7 @@ void DeviceCard::contextMenuEvent(QContextMenuEvent* event)
 
 void DeviceCard::setStatus(const QString& status)
 {
+    lastStatusKey_ = status;   // 记录当前状态 key，断联恢复时使用
     if (status == "online") {
         statusLabel_->setText("在线");
         statusLabel_->setStyleSheet("background:#40a870;color:#1e1e2e;border-radius:3px;font-weight:bold;");
@@ -126,5 +127,24 @@ void DeviceCard::setStatus(const QString& status)
     } else {
         statusLabel_->setText("未知");
         statusLabel_->setStyleSheet("background:#d4a040;color:#1e1e2e;border-radius:3px;font-weight:bold;");
+    }
+}
+
+// 标记设备断联状态，更新样式和状态标签
+void DeviceCard::setDisconnected(bool disconnected)
+{
+    disconnected_ = disconnected;
+
+    if (disconnected) {
+        statusLabel_->setText("断联");
+        statusLabel_->setStyleSheet("background:#f38ba8;color:#1e1e2e;border-radius:3px;font-weight:bold;");
+        setStyleSheet("QFrame#DeviceCard { border: 2px solid #f38ba8; background-color: #1e1e2e; border-radius: 6px; }");
+    } else {
+        // 用保存的 key 恢复断联前的状态
+        setStatus(lastStatusKey_.isEmpty() ? "unknown" : lastStatusKey_);
+        if (selected_)
+            setStyleSheet("QFrame#DeviceCard { border: 2px solid #89b4fa; background-color: #2a2a45; border-radius: 6px; }");
+        else
+            setStyleSheet("");
     }
 }

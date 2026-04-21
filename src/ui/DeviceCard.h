@@ -9,6 +9,7 @@ class QFormLayout;
 
 class DeviceCard : public QFrame {
     Q_OBJECT
+    Q_PROPERTY(bool disconnected READ isDisconnected WRITE setDisconnected)
 
 public:
     explicit DeviceCard(const QString& deviceId, QWidget* parent = nullptr);
@@ -25,6 +26,9 @@ public:
     bool isSelected() const { return selected_; }
     void setSelected(bool selected);
 
+    bool isDisconnected() const { return disconnected_; }
+    void setDisconnected(bool disconnected);
+
 protected:
     void mousePressEvent(QMouseEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
@@ -38,4 +42,6 @@ private:
     QLabel*      statusLabel_;
     QFormLayout* dataLayout_;
     bool         selected_ = false;
+    bool         disconnected_ = false;
+    QString      lastStatusKey_;   // 断联前的状态 key（online/offline/unknown），恢复时使用
 };
