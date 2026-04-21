@@ -7,6 +7,7 @@
 #include <QButtonGroup>
 #include <QIcon>
 #include <QSize>
+#include <iostream>
 
 #ifdef Q_OS_WIN
 #  include <windows.h>
@@ -121,6 +122,8 @@ void MainWindow::onConnectRequested(const QString& brokerUrl,
             configPanel_, &ConfigPanel::appendMessage);
     connect(mqttBridge_.get(), &MqttBridge::messageReceived,
             deviceView_, &DeviceView::updateDevice);
+    connect(mqttBridge_.get(), &MqttBridge::connectionLost,
+            this, &MainWindow::onMqttConnectionLost);
     connect(deviceView_, &DeviceView::publishRequested,
             this, &MainWindow::onPublishRequested);
 
@@ -136,6 +139,7 @@ void MainWindow::onPublishRequested(const QString& topic, const QString& payload
 
 void MainWindow::onDisconnectRequested()
 {
+    deviceView_->stopDisconnectDetection();
     mqttBridge_.reset();
     if (mqttClient_) {
         mqttClient_->disconnect();
@@ -143,4 +147,12 @@ void MainWindow::onDisconnectRequested()
     }
     configPanel_->onDisconnected();
     ui->statusbar->showMessage("Disconnected", 3000);
+}
+
+void MainWindow::onMqttConnectionLost()
+{
+    std::cerr << "[MainWindow] onMqttConnectionLost called" << std::endl;
+    // 标记所有设备为断联
+    deviceView_->markAllDevicesDisconnected();
+    ui->statusbar->showMessage("MQTT Connection Lost", 5000);
 }

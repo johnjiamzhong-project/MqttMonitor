@@ -1,6 +1,6 @@
 # 开发进度
 
-最后更新：2026-04-13（指令预设）
+最后更新：2026-04-21（断联检测 UI 控制 + 配置持久化）
 
 ---
 
@@ -191,61 +191,64 @@ CMakeLists.txt                      ✅ 新增源文件
 
 ---
 
-### 设备断联检测（开发阶段）
-
-**设计完成于** 2026-04-21
+### 设备断联检测 ✅ 完成（2026-04-21）
 
 **设计要点**
 - 断联判断：三重条件（30秒超时 / MQTT断连 / status=offline），任意一个触发即断联
-- UI 样式：保留原 status 显示，用视觉标记（红边框/灰化）表示断联
-- 检测实现：懒惰轮询（1秒检查一次，仅检查活跃设备子集），支持大量设备
+- UI 样式：卡片红色边框 + 状态 badge 显示"断联"，恢复后还原断联前的状态（online/offline）
+- 检测实现：懒惰轮询（1秒检查一次，仅检查 checkQueue_ 中的设备），支持大量设备
 - 恢复逻辑：新消息到达立即恢复，无延迟确认
+- MQTT 断连：杀掉 Broker 进程触发 `connection_lost` 回调，所有设备立即断联，状态栏提示
+
+**实测验证（2026-04-21）**
+- ✅ 30 秒无消息后设备自动显示断联（红边框 + badge "断联"）
+- ✅ Kill Mosquitto 进程后所有设备立即断联，状态栏显示 "MQTT Connection Lost"
+- ✅ 重新发送消息后卡片恢复断联前状态
 
 **实施任务列表**
 
-- [ ] **Task #1** 定义断联状态数据结构和 DeviceView 基础改造
-  - [ ] 定义 DeviceState 结构体（deviceId / lastMessageTime / isDisconnected）
-  - [ ] 在 DeviceView 添加 `QMap<QString, DeviceState> deviceStates_`
-  - [ ] 在 DeviceView 添加 `QSet<QString> checkQueue_`（待检查队列）
-  - [ ] 更新 addCard() 方法初始化 DeviceState
+- [x] **Task #1** 定义断联状态数据结构和 DeviceView 基础改造
+  - [x] 定义 DeviceState 结构体（deviceId / lastMessageTime / isDisconnected）
+  - [x] 在 DeviceView 添加 `QMap<QString, DeviceState> deviceStates_`
+  - [x] 在 DeviceView 添加 `QSet<QString> checkQueue_`（待检查队列）
+  - [x] 更新 addCard() 方法初始化 DeviceState
 
-- [ ] **Task #2** 实现懒惰轮询定时器和检测逻辑
-  - [ ] 添加 `QTimer disconnectCheckTimer_`
-  - [ ] 实现 `checkDisconnectedDevices()` 槽（检查 checkQueue 中超时的设备）
-  - [ ] 实现 `markDeviceDisconnected()` 和 `markDeviceConnected()` 方法
+- [x] **Task #2** 实现懒惰轮询定时器和检测逻辑
+  - [x] 添加 `QTimer disconnectCheckTimer_`
+  - [x] 实现 `checkDisconnectedDevices()` 槽（检查 checkQueue 中超时的设备）
+  - [x] 实现 `markDeviceDisconnected()` 和 `markDeviceConnected()` 方法
 
-- [ ] **Task #3** 更新消息处理流程，集成超时检测
-  - [ ] 在 `updateDevice()` 中更新 lastMessageTime
-  - [ ] 在 `updateDevice()` 中处理设备恢复逻辑
-  - [ ] 在 `updateDevice()` 中决定是否加入 checkQueue
+- [x] **Task #3** 更新消息处理流程，集成超时检测
+  - [x] 在 `updateDevice()` 中更新 lastMessageTime
+  - [x] 在 `updateDevice()` 中处理设备恢复逻辑
+  - [x] 在 `updateDevice()` 中决定是否加入 checkQueue
 
-- [ ] **Task #4** 处理 MQTT 连接断开事件
-  - [ ] 连接 MqttBridge::connectionLost 信号
-  - [ ] 在 `onMqttConnectionLost()` 中标记所有设备为断联
+- [x] **Task #4** 处理 MQTT 连接断开事件
+  - [x] 连接 MqttBridge::connectionLost 信号
+  - [x] 在 `onMqttConnectionLost()` 中标记所有设备为断联
 
-- [ ] **Task #5** DeviceCard 添加断联状态支持和样式
-  - [ ] 添加 Q_PROPERTY(bool disconnected)
-  - [ ] 实现 `setDisconnected(bool)` 方法
-  - [ ] 实现 `isDisconnected()` 查询方法
+- [x] **Task #5** DeviceCard 添加断联状态支持和样式
+  - [x] 添加 Q_PROPERTY(bool disconnected)
+  - [x] 实现 `setDisconnected(bool)` 方法
+  - [x] 实现 `isDisconnected()` 查询方法
 
-- [ ] **Task #6** 更新 dark.qss 样式表支持断联指示
-  - [ ] 添加 `DeviceCard[disconnected="true"]` 选择器
-  - [ ] 定义红色边框或灰化背景样式
+- [x] **Task #6** 更新 dark.qss 样式表支持断联指示
+  - [x] 添加 `DeviceCard[disconnected="true"]` 选择器
+  - [x] 定义红色边框或灰化背景样式
 
-- [ ] **Task #7** 启动/停止轮询定时器的生命周期管理
-  - [ ] 在 MainWindow 中管理定时器启动/停止
-  - [ ] 在连接时启动，断开时停止
+- [x] **Task #7** 启动/停止轮询定时器的生命周期管理
+  - [x] 在 MainWindow 中管理定时器启动/停止
+  - [x] 在连接时启动，断开时停止
 
-- [ ] **Task #8** 处理设备删除时的状态清理
-  - [ ] 在 `removeDevice()` 中删除 deviceStates_[deviceId]
-  - [ ] 从 checkQueue_ 中移除 deviceId
+- [x] **Task #8** 处理设备删除时的状态清理
+  - [x] 在 `removeDevice()` 中删除 deviceStates_[deviceId]
+  - [x] 从 checkQueue_ 中移除 deviceId
 
-- [ ] **Task #9** 编译验证和集成测试
-  - [ ] 编译验证无错误
-  - [ ] 测试超时检测（30 秒无消息后显示断联）
-  - [ ] 测试 MQTT 断连（所有设备立即断联）
-  - [ ] 测试恢复逻辑（新消息到达立即恢复）
-  - [ ] 测试多设备场景性能
+- [x] **Task #9** 编译验证和集成测试
+  - [x] 编译验证无错误
+  - [x] 测试超时检测（30 秒无消息后显示断联）
+  - [x] 测试 MQTT 断连（Kill Mosquitto 进程，所有设备立即断联）
+  - [x] 测试恢复逻辑（新消息到达立即恢复）
 
 **涉及文件预期**
 ```
@@ -255,6 +258,43 @@ src/ui/dark.qss                         ✅ 断联样式
 src/bridge/MqttBridge.h / .cpp          ✅ connectionLost 信号
 mainwindow.h / .cpp                     ✅ 定时器生命周期
 CMakeLists.txt                          ✅ 验证编译
+```
+
+---
+
+### 断联检测 UI 控制 + 配置持久化 ✅ 完成（2026-04-21）
+
+**设计要点**
+- 启用/禁用开关（QCheckBox）：默认关闭，用户手动勾选启用
+- 超时时间设置（QSpinBox）：范围 1-300 秒，默认 30 秒
+- 配置持久化：保存到 `%APPDATA%\MqttMonitor\disconnect_detection.json`
+- 启动行为：读取上次保存的配置状态，自动恢复
+- 断开连接时：自动停止检测定时器，但保留配置状态
+- 重新连接时：用户根据复选框状态手动启动（如果上次启用了）
+
+**实施要点**
+- [x] 新建 `DisconnectDetectionConfig` 类：管理 enabled 状态和 timeoutSeconds，JSON 持久化
+- [x] 在 DeviceView 工具栏添加两个控件：
+  - QCheckBox "启用断联检测"
+  - QSpinBox 超时秒数（1-300，默认 30）
+- [x] 修改 `checkDisconnectedDevices()` 方法：使用 `timeoutMs_` 成员变量替代硬编码的 30000
+- [x] 移除 mainwindow.cpp 中的自动启动逻辑：
+  - 移除连接时自动调用 `startDisconnectDetection()`
+  - 保留断开时调用 `stopDisconnectDetection()`（断连后停止检测）
+- [x] 构造函数自动启动：如果上次保存的配置为启用状态，自动启动检测
+
+**操作流程**
+1. 启动应用 → 读取配置 → 根据配置决定是否显示"启用断联检测"为勾选状态
+2. 用户勾选 → 启动检测定时器 → 配置立即保存
+3. 用户取消勾选 → 停止检测定时器 → 配置立即保存
+4. 修改超时秒数 → 新值立即生效并保存
+
+**涉及文件**
+```
+src/core/DisconnectDetectionConfig.h / .cpp     ✅ 新建
+src/ui/DeviceView.h / .cpp                      ✅ UI 控件 + 槽函数
+mainwindow.h / .cpp                             ✅ 移除自动启动逻辑
+CMakeLists.txt                                  ✅ 新增 DisconnectDetectionConfig
 ```
 
 ---

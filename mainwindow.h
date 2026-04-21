@@ -30,6 +30,7 @@ private slots:
                             const QString& topic);
     void onDisconnectRequested();
     void onPublishRequested(const QString& topic, const QString& payload, int qos);
+    void onMqttConnectionLost();
 
 private:
     Ui::MainWindow* ui;

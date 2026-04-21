@@ -20,6 +20,8 @@ add_executable(MqttMonitor
     src/core/MessageBuffer.h
     src/core/ConfigStore.cpp
     src/core/ConfigStore.h
+    src/core/DisconnectDetectionConfig.cpp
+    src/core/DisconnectDetectionConfig.h
     src/core/CardRuleConfig.h
     src/core/CardRuleStore.cpp
     src/core/CardRuleStore.h
