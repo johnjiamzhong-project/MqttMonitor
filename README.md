@@ -98,6 +98,56 @@ Paho 的消息回调运行在子线程，Bridge 层通过 `Qt::QueuedConnection`
 
 ---
 
+## 设备断联检测设计
+
+### 断联判断条件（三选一触发）
+
+设备被标记为"断联"的条件：
+
+| 条件 | 来源 | 说明 |
+|------|------|------|
+| **时间超时** | 本地计时 | 设备超过 **30 秒**未收到消息 |
+| **MQTT 连接断开** | MqttBridge.connectionLost 信号 | Broker 连接丢失时，所有设备标记断联 |
+| **status 字段** | 消息 JSON | 设备主动上报 `status: "offline"` 时 |
+
+**判定逻辑：** 只要满足上述任意一个条件，设备即刻被标记为断联（无需多条件同时满足）。
+
+### UI 样式标记
+
+断联状态在 DeviceCard 上以**样式标记**显示（不覆盖原有 status 显示）：
+- **保留原 status 字段显示**：卡片继续展示消息中的 status 值
+- **应用断联视觉标记**：边框/背景改为灰化或红色提示样式（如 `border: 2px solid #ff6b6b`）
+- **QSS 实现**：使用选择器 `DeviceCard[disconnected="true"]` 精确定位样式
+
+### 检测实现（懒惰轮询）
+
+为支持大量设备的高效检测，采用**懒惰轮询**策略：
+
+1. **轮询定时器**：QTimer，每 **1 秒**触发一次检查
+2. **待检查队列**：维护 `QSet<QString> checkQueue_`，仅包含"距上次消息已 > 20 秒"的设备
+   - 新消息到达：若该设备距离上次消息时间已 > 20 秒，自动加入待检查队列
+   - 轮询时：仅检查队列中的设备，计算 `当前时间 - lastMessageTime`，若 > 30 秒则标记断联
+3. **性能特性**：即使有 1000+ 设备，也仅检查活跃设备的小规模子集，性能开销恒定
+
+### 恢复逻辑
+
+- **立即恢复**：设备一旦收到新消息、或 MQTT 重连、或 status ≠ offline，立即取消断联标记
+- **无需延迟确认**：消息本身已代表设备活着，无抖动风险
+
+### 数据结构
+
+DeviceView 维护每个设备的状态：
+
+```cpp
+struct DeviceState {
+    QString   deviceId;
+    qint64    lastMessageTime;  // 最后收消息的时间戳（毫秒）
+    bool      isDisconnected;   // 当前是否已标记为断联
+};
+```
+
+---
+
 ## 开发阶段规划
 
 ### Phase 1 — 核心连通 ✅ 完成
@@ -130,6 +180,7 @@ Paho 的消息回调运行在子线程，Bridge 层通过 `Qt::QueuedConnection`
 - [x] 多套 Broker 配置切换：命名配置存档，启动自动恢复，JSON 持久化至 `%APPDATA%\MqttMonitor\profiles.json`
 - [x] 卡片规则配置：JSON 字段名（device_id / name / status / data）及状态值（online / offline）均可自定义，规则持久化至 `%APPDATA%\MqttMonitor\card_rules.json`，修改仅对新消息生效
 - [x] 指令预设：群发面板支持保存命名预设（以 topic 命名，重名加 `-2/-3` 后缀），持久化至 `%APPDATA%\MqttMonitor\cmd_presets.json`；上次使用的 topic/payload/QoS 跨重启自动恢复
+- [ ] **设备断联检测**（设计阶段）：自动检测设备离线状态，基于组合判断（见下方详述）
 - [ ] 日志模块：消息历史记录到本地文件
 - [ ] 数据库模块：SQLite 持久化 + 历史消息查询
 
