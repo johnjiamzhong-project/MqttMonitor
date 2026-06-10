@@ -14,12 +14,29 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows",
         "CMAKE_MAKE_PROGRAM": "D:/Tool/ninja-win/ninja.exe"
       }
+    },
+    {
+      "name": "arm64",
+      "displayName": "Linux arm64 (RK3588S cross-compile, Unix Makefiles)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-arm64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{HOME}/arm64-toolchain.cmake",
+        "CMAKE_PREFIX_PATH": "/usr/aarch64-linux-gnu;/usr/lib/aarch64-linux-gnu",
+        "Qt5_DIR": "/usr/lib/aarch64-linux-gnu/cmake/Qt5",
+        "PahoMqttCpp_DIR": "/usr/aarch64-linux-gnu/lib/cmake/PahoMqttCpp"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "default",
       "configurePreset": "default"
+    },
+    {
+      "name": "arm64",
+      "configurePreset": "arm64"
     }
   ]
 }
